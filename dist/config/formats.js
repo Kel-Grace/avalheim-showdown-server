@@ -25,6 +25,15 @@ const Formats = [
   // S/V Singles
   ///////////////////////////////////////////////////////////////////
   {
+    section: "ROLEPLAY"
+  },
+  {
+    name: "[RP] Random Battle",
+    desc: `Le tier du RP.`,
+    mod: "gen9",
+    ruleset: ["PotD", "Obtainable", "Species Clause", "HP Percentage Mod", "Cancel Mod", "Sleep Clause Mod", "Illusion Level Mod"]
+  },
+  {
     section: "S/V Singles"
   },
   {

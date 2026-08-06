@@ -26,8 +26,24 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 	},
 	{
 		name: "[RP] Random Battle",
-		desc: `Le tier du RP.`,
+		desc: `Random Battle at Eldgard.`,
+		mod: 'random',
+		team: 'random',
+		ruleset: ['PotD', 'Obtainable', 'Species Clause', 'HP Percentage Mod', 'Cancel Mod', 'Sleep Clause Mod', 'Illusion Level Mod'],
+	},
+	{
+		name: "[RP] Première Arène",
+		desc: `Le tier de la première arène du RP.`,
 		mod: 'gen9',
+		ruleset: ['PotD', 'Obtainable', 'Species Clause', 'HP Percentage Mod', 'Cancel Mod', 'Sleep Clause Mod', 'Illusion Level Mod'],
+	},
+		{
+		name: "[RP] Free-For-All Roleplay",
+		desc: `Le tier du FFA du RP.`,
+		mod: 'gen9',
+	    gameType: 'freeforall',
+		tournamentShow: false,
+		rated: false,
 		ruleset: ['PotD', 'Obtainable', 'Species Clause', 'HP Percentage Mod', 'Cancel Mod', 'Sleep Clause Mod', 'Illusion Level Mod'],
 	},
 	{
