@@ -19964,11 +19964,11 @@ const Pokedex = {
     heightm: 1.9,
     weightkg: 110,
     color: "Black",
-    tags: ["Legendary"],
+    tags: ["Mythical"],
     eggGroups: ["Undiscovered"]
   },
   primaloka: {
-    num: -5003,
+    num: -1290,
     name: "Oka-Primal",
     types: ["Water", "Ground"],
     gender: "M",
@@ -19976,8 +19976,8 @@ const Pokedex = {
     abilities: { 0: "Unaware" },
     heightm: 1.7,
     weightkg: 70,
-    color: "White",
-    tags: ["Legendary"],
+    color: "Black",
+    tags: ["Mythical"],
     eggGroups: ["Undiscovered"]
   }
 };

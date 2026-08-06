@@ -28,6 +28,9 @@ const FormatsData = {
   ivysaur: {
     tier: "NFE"
   },
+  primaloka: {
+    tier: "OU"
+  },
   venusaur: {
     tier: "PU",
     doublesTier: "(DUU)",
