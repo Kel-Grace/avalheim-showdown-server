@@ -27,7 +27,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 	{
 		name: "[RP] Random Battle",
 		desc: `Random Battle at Eldgard.`,
-		mod: 'random',
+		mod: 'gen9',
 		team: 'random',
 		ruleset: ['PotD', 'Obtainable', 'Species Clause', 'HP Percentage Mod', 'Cancel Mod', 'Sleep Clause Mod', 'Illusion Level Mod'],
 	},
