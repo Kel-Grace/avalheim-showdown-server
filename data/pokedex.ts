@@ -19881,5 +19881,18 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		color: "Black",
 		tags: ["Legendary"],
 		eggGroups: ["Undiscovered"],
+	},
+	primaloka: {
+		num: -5002,
+		name: "Oka-Primal",
+		types: ["Water", "Ground"],
+		gender: "M",
+		baseStats: { hp: 255, atk: 255, def: 255, spa: 255, spd: 255, spe: 255 },
+		abilities: { 0: "Unaware" },
+		heightm: 1.7,
+		weightkg: 70,
+		color: "White",
+		tags: ["Legendary"],
+		eggGroups: ["Undiscovered"],
 	}
 };
