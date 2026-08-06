@@ -100206,6 +100206,14 @@ const Learnsets = {
     eventData: [
       { generation: 5, level: 47, moves: ["darkpulse", "flamethrower", "hyperbeam", "icebeam"] }
     ]
+  },
+  primaloka: {
+    learnset: {
+      swordsdance: ["9M", "9L39", "8M", "8L39", "8V", "7M", "7L38", "7V", "6M", "6L38", "5M", "5L38", "4M", "4E", "3T", "3E"],
+      vcreate: ["8L1", "8S7", "7S6", "6S3", "6S5", "5S1", "5S2"],
+      extremespeed: ["9L0", "9S2", "8L0", "7L34", "7V", "7S1", "6L34", "5L34", "4L39", "4S0", "3L49"],
+      dragonascent: ["9L1", "8L1", "8S9", "7T", "6T", "6S4", "6S6", "6S7"]
+    }
   }
 };
 //# sourceMappingURL=learnsets.js.map

@@ -19883,7 +19883,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		eggGroups: ["Undiscovered"],
 	},
 	primaloka: {
-		num: -5002,
+		num: -5003,
 		name: "Oka-Primal",
 		types: ["Water", "Ground"],
 		gender: "M",
