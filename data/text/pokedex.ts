@@ -21,7 +21,7 @@ export const PokedexText: { [id: IDEntry]: PokedexText } = {
 		name: "Mega Mythos",
 	},
 	primaloka: {
-		name: "Oka-Primal",
+		name: "Oka Primal",
 	},
 	charmeleon: {
 		name: "Charmeleon",

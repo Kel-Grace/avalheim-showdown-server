@@ -19968,17 +19968,18 @@ const Pokedex = {
     eggGroups: ["Undiscovered"]
   },
   primaloka: {
-    num: -1290,
-    name: "Oka-Primal",
+    num: 1290,
+    name: "Oka Primal",
     types: ["Water", "Ground"],
     gender: "M",
-    baseStats: { hp: 255, atk: 255, def: 255, spa: 255, spd: 255, spe: 255 },
+    baseStats: { hp: 100, atk: 180, def: 160, spa: 180, spd: 160, spe: 90 },
     abilities: { 0: "Unaware" },
     heightm: 1.7,
     weightkg: 70,
     color: "Black",
     tags: ["Mythical"],
-    eggGroups: ["Undiscovered"]
+    eggGroups: ["Undiscovered"],
+    gen: 9
   }
 };
 //# sourceMappingURL=pokedex.js.map
