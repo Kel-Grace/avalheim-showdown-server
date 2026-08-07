@@ -74,6 +74,18 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		eggGroups: ["Monster", "Grass"],
 		changesFrom: "Venusaur",
 	},
+	primaloka: {
+		num: 1030,
+		name: "Oka",
+		types: ["Ground", "Water"],
+		genderRatio: { M: 0.875, F: 0.125 },
+		baseStats: { hp: 80, atk: 80, def: 80, spa: 150, spd: 80, spe: 143 },
+		abilities: { 0: "Unaware", H: "Swift Swim" },
+		heightm: 1.7,
+		weightkg: 60.9,
+		color: "Black",
+		eggGroups: ["Monster", "Human-Like"],
+	},
 	charmander: {
 		num: 4,
 		name: "Charmander",
@@ -19882,18 +19894,4 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		tags: ["Mythical"],
 		eggGroups: ["Undiscovered"],
 	},
-	primaloka: {
-		num: 1290,
-		name: "Oka Primal",
-		types: ["Water", "Ground"],
-		gender: "M",
-		baseStats: { hp: 90, atk: 120, def: 120, spa: 120, spd: 120, spe: 90 },
-		abilities: { 0: "Unaware" },
-		heightm: 1.7,
-		weightkg: 70,
-		color: "Black",
-		tags: ["Mythical"],
-		eggGroups: ["Undiscovered"],
-		gen: 9,
-	}
 };
