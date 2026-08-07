@@ -92,7 +92,7 @@ export function changeSet(context: Battle, pokemon: Pokemon, newSet: SSBSet, cha
 	}
 	const details = pokemon.getUpdatedDetails();
 	if (oldShiny !== pokemon.set.shiny || oldGender !== pokemon.gender) context.add('replace', pokemon, details);
-	if (changeAbility) pokemon.setAbility(newSet.ability as string, undefined, true);
+	if (changeAbility) pokemon.setAbility(newSet.ability as string, undefined, undefined, true);
 
 	pokemon.baseMaxhp = pokemon.species.name === 'Shedinja' ? 1 : Math.floor(Math.floor(
 		2 * pokemon.species.baseStats.hp + pokemon.set.ivs.hp + Math.floor(pokemon.set.evs.hp / 4) + 100
@@ -142,11 +142,12 @@ export function changeMoves(context: Battle, pokemon: Pokemon, newMoves: (string
 		const moveName = Array.isArray(newMove) ? newMove[context.random(newMove.length)] : newMove;
 		const move = context.dex.moves.get(context.toID(moveName));
 		if (!move.id) continue;
+		const pp = context.calculatePP(move);
 		const moveSlot = {
 			move: move.name,
 			id: move.id,
-			pp: Math.floor((move.noPPBoosts ? move.pp : move.pp * 8 / 5) * carryOver[slot]),
-			maxpp: (move.noPPBoosts ? move.pp : move.pp * 8 / 5),
+			pp: pp * carryOver[slot],
+			maxpp: pp,
 			target: move.target,
 			disabled: false,
 			disabledSource: '',
@@ -321,14 +322,6 @@ export const Scripts: ModdedBattleScriptsData = {
 			// in gen 1, fainting skips the rest of the turn
 			// residuals don't exist in gen 1
 			this.queue.clear();
-			// Fainting clears accumulated Bide damage
-			for (const pokemon of this.getAllActive()) {
-				if (pokemon.volatiles['bide']?.damage) {
-					pokemon.volatiles['bide'].damage = 0;
-					this.hint("Desync Clause Mod activated!");
-					this.hint("In Gen 1, Bide's accumulated damage is reset to 0 when a Pokemon faints.");
-				}
-			}
 		} else if (this.gen <= 3 && this.gameType === 'singles') {
 			// in gen 3 or earlier, fainting in singles skips to residuals
 			for (const pokemon of this.getAllActive()) {
@@ -369,51 +362,20 @@ export const Scripts: ModdedBattleScriptsData = {
 		case 'start': {
 			for (const side of this.sides) {
 				if (side.pokemonLeft) side.pokemonLeft = side.pokemon.length;
+				this.add('teamsize', side.id, side.pokemon.length);
 			}
 
 			this.add('start');
 
-			// Change Zacian/Zamazenta into their Crowned formes
 			for (const pokemon of this.getAllPokemon()) {
-				let rawSpecies: Species | null = null;
-				if (pokemon.species.id === 'zacian' && pokemon.item === 'rustedsword') {
-					rawSpecies = this.dex.species.get('Zacian-Crowned');
-				} else if (pokemon.species.id === 'zamazenta' && pokemon.item === 'rustedshield') {
-					rawSpecies = this.dex.species.get('Zamazenta-Crowned');
-				}
-				if (!rawSpecies) continue;
-				const species = pokemon.setSpecies(rawSpecies);
-				if (!species) continue;
-				pokemon.baseSpecies = rawSpecies;
-				pokemon.details = pokemon.getUpdatedDetails();
-				// pokemon.setAbility(species.abilities['0'], null, true);
-				// pokemon.baseAbility = pokemon.ability;
-
-				const behemothMove: { [k: string]: string } = {
-					'Zacian-Crowned': 'behemothblade', 'Zamazenta-Crowned': 'behemothbash',
-				};
-				const ironHead = pokemon.baseMoves.indexOf('ironhead');
-				if (ironHead >= 0) {
-					const move = this.dex.moves.get(behemothMove[rawSpecies.name]);
-					pokemon.baseMoveSlots[ironHead] = {
-						move: move.name,
-						id: move.id,
-						pp: move.noPPBoosts ? move.pp : move.pp * 8 / 5,
-						maxpp: move.noPPBoosts ? move.pp : move.pp * 8 / 5,
-						target: move.target,
-						disabled: false,
-						disabledSource: '',
-						used: false,
-					};
-					pokemon.moveSlots = pokemon.baseMoveSlots.slice();
-				}
+				this.singleEvent('BattleStart', this.dex.conditions.getByID(pokemon.species.id), pokemon.speciesState, pokemon);
 			}
 
-			if (this.format.onBattleStart) this.format.onBattleStart.call(this);
+			this.format.onBattleStart?.call(this);
 			for (const rule of this.ruleTable.keys()) {
 				if ('+*-!'.includes(rule.charAt(0))) continue;
 				const subFormat = this.dex.formats.get(rule);
-				if (subFormat.onBattleStart) subFormat.onBattleStart.call(this);
+				subFormat.onBattleStart?.call(this);
 			}
 
 			for (const side of this.sides) {
@@ -427,9 +389,6 @@ export const Scripts: ModdedBattleScriptsData = {
 						this.actions.switchIn(side.pokemon[i], i);
 					}
 				}
-			}
-			for (const pokemon of this.getAllPokemon()) {
-				this.singleEvent('Start', this.dex.conditions.getByID(pokemon.species.id), pokemon.speciesState, pokemon);
 			}
 			this.midTurn = true;
 			break;
@@ -695,13 +654,6 @@ export const Scripts: ModdedBattleScriptsData = {
 			}
 			if (pokemon.species.name === 'Terapagos-Terastal' && type === 'Stellar') {
 				pokemon.formeChange('Terapagos-Stellar', null, true);
-				pokemon.baseMaxhp = Math.floor(Math.floor(
-					2 * pokemon.species.baseStats['hp'] + pokemon.set.ivs['hp'] + Math.floor(pokemon.set.evs['hp'] / 4) + 100
-				) * pokemon.level / 100 + 10);
-				const newMaxHP = pokemon.baseMaxhp;
-				pokemon.hp = newMaxHP - (pokemon.maxhp - pokemon.hp);
-				pokemon.maxhp = newMaxHP;
-				this.battle.add('-heal', pokemon, pokemon.getHealth, '[silent]');
 			}
 			if (!pokemon.illusion && pokemon.name === 'Neko') {
 				this.battle.add(`c:|${getName('Neko')}|Possible thermal failure if operation continues (Meow on fire ?)`);
@@ -717,7 +669,7 @@ export const Scripts: ModdedBattleScriptsData = {
 
 			if (move.spreadHit) {
 				// multi-target modifier (doubles only)
-				const spreadModifier = move.spreadModifier || (this.battle.gameType === 'freeforall' ? 0.5 : 0.75);
+				const spreadModifier = this.battle.gameType === 'freeforall' ? 0.5 : 0.75;
 				this.battle.debug(`Spread modifier: ${spreadModifier}`);
 				baseDamage = this.battle.modify(baseDamage, spreadModifier);
 			} else if (move.multihitType === 'parentalbond' && move.hit > 1) {
@@ -728,7 +680,7 @@ export const Scripts: ModdedBattleScriptsData = {
 			}
 
 			// weather modifier
-			baseDamage = this.battle.runEvent('WeatherModifyDamage', pokemon, target, move, baseDamage);
+			baseDamage = this.battle.priorityEvent('WeatherModifyDamage', pokemon, target, move, baseDamage);
 
 			// crit - not a modifier
 			const isCrit = target.getMoveHitData(move).crit;
@@ -812,8 +764,12 @@ export const Scripts: ModdedBattleScriptsData = {
 			// Final modifier. Modifiers that modify damage after min damage check, such as Life Orb.
 			baseDamage = this.battle.runEvent('ModifyDamage', pokemon, target, move, baseDamage);
 
-			if (move.isZOrMaxPowered && target.getMoveHitData(move).zBrokeProtect) {
+			const bypassProtect = target.getMoveHitData(move).bypassProtect;
+			if (bypassProtect) {
 				baseDamage = this.battle.modify(baseDamage, 0.25);
+				if (bypassProtect !== true && bypassProtect.effectType === 'Ability') {
+					this.battle.add('-ability', pokemon, bypassProtect.name);
+				}
 				this.battle.add('-zbroken', target);
 			}
 
@@ -907,8 +863,8 @@ export const Scripts: ModdedBattleScriptsData = {
 			} else {
 				this.battle.add(isDrag ? 'drag' : 'switch', pokemon, pokemon.getFullDetails);
 			}
-			pokemon.abilityState.effectOrder = this.battle.effectOrder++;
-			pokemon.itemState.effectOrder = this.battle.effectOrder++;
+			pokemon.abilityState = this.battle.initEffectState({ id: pokemon.ability, target: pokemon });
+			pokemon.itemState = this.battle.initEffectState({ id: pokemon.item, target: pokemon });
 			if (isDrag && this.battle.gen === 2) pokemon.draggedIn = this.battle.turn;
 			pokemon.previouslySwitchedIn++;
 
@@ -942,7 +898,7 @@ export const Scripts: ModdedBattleScriptsData = {
 
 			pokemon.formeChange(speciesid, pokemon.getItem(), true);
 			if (pokemon.canMegaEvo) {
-				pokemon.canMegaEvo = null;
+				pokemon.canMegaEvo = false;
 			} else {
 				pokemon.canUltraBurst = null;
 			}
@@ -969,11 +925,11 @@ export const Scripts: ModdedBattleScriptsData = {
 				pokemon.baseMoves.includes(this.battle.toID(altForme.requiredMove)) && !item.zMove) {
 				return altForme.name;
 			}
+			if (!item.megaStone) return null;
 			// a hacked-in Megazard X can mega evolve into Megazard Y, but not into Megazard X
-			if (item.megaEvolves === species.baseSpecies && item.megaStone !== species.name) {
-				return item.megaStone;
-			}
-			return null;
+			// FIXME: Change to species.name when champions comes
+			const megaEvolution = item.megaStone[species.baseSpecies];
+			return megaEvolution && megaEvolution !== species.name ? megaEvolution : null;
 		},
 
 		// 1 Z per pokemon
@@ -1242,171 +1198,6 @@ export const Scripts: ModdedBattleScriptsData = {
 				this.battle.activeMove = oldActiveMove;
 			}
 		},
-		useMoveInner(moveOrMoveName, pokemon, options) {
-			let target = options?.target;
-			let sourceEffect = options?.sourceEffect;
-			const zMove = options?.zMove;
-			const maxMove = options?.maxMove;
-			if (!sourceEffect && this.battle.effect.id) sourceEffect = this.battle.effect;
-			if (sourceEffect && ['instruct', 'custapberry'].includes(sourceEffect.id)) sourceEffect = null;
-
-			let move = this.dex.getActiveMove(moveOrMoveName);
-			pokemon.lastMoveUsed = move;
-			if (move.id === 'weatherball' && zMove) {
-				// Z-Weather Ball only changes types if it's used directly,
-				// not if it's called by Z-Sleep Talk or something.
-				this.battle.singleEvent('ModifyType', move, null, pokemon, target, move, move);
-				if (move.type !== 'Normal') sourceEffect = move;
-			}
-			if (zMove || (move.category !== 'Status' && sourceEffect && (sourceEffect as ActiveMove).isZ)) {
-				move = this.getActiveZMove(move, pokemon);
-			}
-			if (maxMove && move.category !== 'Status') {
-				// Max move outcome is dependent on the move type after type modifications from ability and the move itself
-				this.battle.singleEvent('ModifyType', move, null, pokemon, target, move, move);
-				this.battle.runEvent('ModifyType', pokemon, target, move, move);
-			}
-			if (maxMove || (move.category !== 'Status' && sourceEffect && (sourceEffect as ActiveMove).isMax)) {
-				move = this.getActiveMaxMove(move, pokemon);
-			}
-
-			if (this.battle.activeMove) {
-				move.priority = this.battle.activeMove.priority;
-				if (!move.hasBounced) move.pranksterBoosted = this.battle.activeMove.pranksterBoosted;
-			}
-			const baseTarget = move.target;
-			let targetRelayVar = { target };
-			targetRelayVar = this.battle.runEvent('ModifyTarget', pokemon, target, move, targetRelayVar, true);
-			if (targetRelayVar.target !== undefined) target = targetRelayVar.target;
-			if (target === undefined) target = this.battle.getRandomTarget(pokemon, move);
-			if (move.target === 'self' || move.target === 'allies') {
-				target = pokemon;
-			}
-			if (sourceEffect) {
-				move.sourceEffect = sourceEffect.id;
-				move.ignoreAbility = (sourceEffect as ActiveMove).ignoreAbility;
-			}
-			let moveResult = false;
-
-			this.battle.setActiveMove(move, pokemon, target);
-
-			this.battle.singleEvent('ModifyType', move, null, pokemon, target, move, move);
-			this.battle.singleEvent('ModifyMove', move, null, pokemon, target, move, move);
-			if (baseTarget !== move.target) {
-				// Target changed in ModifyMove, so we must adjust it here
-				// Adjust before the next event so the correct target is passed to the
-				// event
-				target = this.battle.getRandomTarget(pokemon, move);
-			}
-			move = this.battle.runEvent('ModifyType', pokemon, target, move, move);
-			move = this.battle.runEvent('ModifyMove', pokemon, target, move, move);
-			if (baseTarget !== move.target) {
-				// Adjust again
-				target = this.battle.getRandomTarget(pokemon, move);
-			}
-			if (!move || pokemon.fainted) {
-				return false;
-			}
-
-			let attrs = '';
-
-			let movename = move.name;
-			if (move.id === 'hiddenpower') movename = 'Hidden Power';
-			if (sourceEffect) attrs += `|[from]${sourceEffect.fullname}`;
-			if (zMove && move.isZ === true) {
-				attrs = '|[anim]' + movename + attrs;
-				movename = 'Z-' + movename;
-			}
-			this.battle.addMove('move', pokemon, movename, `${target}${attrs}`);
-
-			if (zMove) this.runZPower(move, pokemon);
-
-			if (!target) {
-				this.battle.attrLastMove('[notarget]');
-				this.battle.add(this.battle.gen >= 5 ? '-fail' : '-notarget', pokemon);
-				return false;
-			}
-
-			const { targets, pressureTargets } = pokemon.getMoveTargets(move, target);
-			if (targets.length) {
-				target = targets[targets.length - 1]; // in case of redirection
-			}
-
-			// Pursuit Clones support
-			const pursuitClones = ['pursuit', 'trivialpursuit', 'attackofopportunity'];
-			const callerMoveForPressure = sourceEffect && (sourceEffect as ActiveMove).pp ? sourceEffect as ActiveMove : null;
-			if (!sourceEffect || callerMoveForPressure || pursuitClones.includes(sourceEffect.id)) {
-				let extraPP = 0;
-				for (const source of pressureTargets) {
-					const ppDrop = this.battle.runEvent('DeductPP', source, pokemon, move);
-					if (ppDrop !== true) {
-						extraPP += ppDrop || 0;
-					}
-				}
-				if (extraPP > 0) {
-					pokemon.deductPP(callerMoveForPressure || moveOrMoveName, extraPP);
-				}
-			}
-
-			if (!this.battle.singleEvent('TryMove', move, null, pokemon, target, move) ||
-				!this.battle.runEvent('TryMove', pokemon, target, move)) {
-				move.mindBlownRecoil = false;
-				return false;
-			}
-
-			this.battle.singleEvent('UseMoveMessage', move, null, pokemon, target, move);
-
-			if (move.ignoreImmunity === undefined) {
-				move.ignoreImmunity = (move.category === 'Status');
-			}
-
-			if (this.battle.gen !== 4 && move.selfdestruct === 'always') {
-				this.battle.faint(pokemon, pokemon, move);
-			}
-
-			let damage: number | false | undefined | '' = false;
-			if (move.target === 'all' || move.target === 'foeSide' || move.target === 'allySide' || move.target === 'allyTeam') {
-				damage = this.tryMoveHit(targets, pokemon, move);
-				if (damage === this.battle.NOT_FAIL) pokemon.moveThisTurnResult = null;
-				if (damage || damage === 0 || damage === undefined) moveResult = true;
-			} else {
-				if (!targets.length) {
-					this.battle.attrLastMove('[notarget]');
-					this.battle.add(this.battle.gen >= 5 ? '-fail' : '-notarget', pokemon);
-					return false;
-				}
-				if (this.battle.gen === 4 && move.selfdestruct === 'always') {
-					this.battle.faint(pokemon, pokemon, move);
-				}
-				moveResult = this.trySpreadMoveHit(targets, pokemon, move);
-			}
-			if (move.selfBoost && moveResult) this.moveHit(pokemon, pokemon, move, move.selfBoost, false, true);
-			if (!pokemon.hp) {
-				this.battle.faint(pokemon, pokemon, move);
-			}
-
-			if (!moveResult) {
-				this.battle.singleEvent('MoveFail', move, null, target, pokemon, move);
-				return false;
-			}
-
-			if (
-				!move.negateSecondary &&
-				!(move.hasSheerForce && pokemon.hasAbility('sheerforce')) &&
-				!move.flags['futuremove']
-			) {
-				const originalHp = pokemon.hp;
-				this.battle.singleEvent('AfterMoveSecondarySelf', move, null, pokemon, target, move);
-				this.battle.runEvent('AfterMoveSecondarySelf', pokemon, target, move);
-				if (pokemon && pokemon !== target && move.category !== 'Status') {
-					if (pokemon.hp <= pokemon.maxhp / 2 && originalHp > pokemon.maxhp / 2) {
-						this.battle.runEvent('EmergencyExit', pokemon, pokemon);
-					}
-				}
-			}
-
-			return true;
-		},
 		hitStepMoveHitLoop(targets, pokemon, move) { // Temporary name
 			let damage: (number | boolean | undefined)[] = [];
 			for (const i of targets.keys()) {
@@ -1516,14 +1307,6 @@ export const Scripts: ModdedBattleScriptsData = {
 					// Total damage dealt is accumulated for the purposes of recoil (Parental Bond).
 					move.totalDamage += damage[i];
 				}
-				if (move.mindBlownRecoil) {
-					const hpBeforeRecoil = pokemon.hp;
-					this.battle.damage(Math.round(pokemon.maxhp / 2), pokemon, pokemon, this.dex.conditions.get(move.id), true);
-					move.mindBlownRecoil = false;
-					if (pokemon.hp <= pokemon.maxhp / 2 && hpBeforeRecoil > pokemon.maxhp / 2) {
-						this.battle.runEvent('EmergencyExit', pokemon, pokemon);
-					}
-				}
 				this.battle.eachEvent('Update');
 				if (!pokemon.hp && targets.length === 1) {
 					hit++; // report the correct number of hits for multihit moves
@@ -1538,26 +1321,8 @@ export const Scripts: ModdedBattleScriptsData = {
 				this.battle.add('-hitcount', targets[0], hit - 1);
 			}
 
-			if ((move.recoil || move.id === 'chloroblast') && move.totalDamage) {
-				const hpBeforeRecoil = pokemon.hp;
-				this.battle.damage(this.calcRecoilDamage(move.totalDamage, move, pokemon), pokemon, pokemon, 'recoil');
-				if (pokemon.hp <= pokemon.maxhp / 2 && hpBeforeRecoil > pokemon.maxhp / 2) {
-					this.battle.runEvent('EmergencyExit', pokemon, pokemon);
-				}
-			}
-
-			if (move.struggleRecoil) {
-				const hpBeforeRecoil = pokemon.hp;
-				let recoilDamage;
-				if (this.dex.gen >= 5) {
-					recoilDamage = this.battle.clampIntRange(Math.round(pokemon.baseMaxhp / 4), 1);
-				} else {
-					recoilDamage = this.battle.clampIntRange(this.battle.trunc(pokemon.maxhp / 4), 1);
-				}
-				this.battle.directDamage(recoilDamage, pokemon, pokemon, { id: 'strugglerecoil' } as Condition);
-				if (pokemon.hp <= pokemon.maxhp / 2 && hpBeforeRecoil > pokemon.maxhp / 2) {
-					this.battle.runEvent('EmergencyExit', pokemon, pokemon);
-				}
+			if (move.totalDamage) {
+				this.applyRecoilDamage(move.totalDamage, move, pokemon);
 			}
 
 			// smartTarget messes up targetsCopy, but smartTarget should in theory ensure that targets will never fail, anyway
@@ -1582,7 +1347,7 @@ export const Scripts: ModdedBattleScriptsData = {
 
 			this.afterMoveSecondaryEvent(targetsCopy.filter(val => !!val), pokemon, move);
 
-			if (!move.negateSecondary && !(move.hasSheerForce && pokemon.hasAbility('sheerforce'))) {
+			if (!(move.hasSheerForce && pokemon.hasAbility('sheerforce'))) {
 				for (const [i, d] of damage.entries()) {
 					// There are no multihit spread moves, so it's safe to use move.totalDamage for multihit moves
 					// The previous check was for `move.multihit`, but that fails for Dragon Darts
@@ -1741,7 +1506,7 @@ export const Scripts: ModdedBattleScriptsData = {
 			if (item === 'ironball') return true;
 			// If a Fire/Flying type uses Burn Up and Roost, it becomes ???/Flying-type, but it's still grounded.
 			if (!negateImmunity && this.hasType('Flying') && !(this.hasType('???') && 'roost' in this.volatiles)) return false;
-			if (this.hasAbility('levitate') && !this.battle.suppressingAbility(this)) return null;
+			if (this.hasAbility(['levitate', 'eelevate']) && !this.battle.suppressingAbility(this)) return null;
 			if ('magnetrise' in this.volatiles) return false;
 			if ('riseabove' in this.volatiles) return false;
 			if ('telekinesis' in this.volatiles) return false;
@@ -1799,10 +1564,10 @@ export const Scripts: ModdedBattleScriptsData = {
 				}
 				if (this.battle.activePerHalf > 1 && !move.tracksTarget) {
 					const isCharging = move.flags['charge'] && !this.volatiles['twoturnmove'] &&
-						!(move.id.startsWith('solarb') && ['sunnyday', 'desolateland'].includes(this.effectiveWeather())) &&
-						!(move.id === 'fruitfullongbow' && ['sunnyday', 'desolateland'].includes(this.effectiveWeather())) &&
+						!(move.id.startsWith('solarb') && ['sunnyday', 'desolateland'].includes(this.effectiveWeather(move))) &&
+						!(move.id === 'fruitfullongbow' && ['sunnyday', 'desolateland'].includes(this.effectiveWeather(move))) &&
 						!(move.id === 'praisethemoon' && this.battle.field.getPseudoWeather('gravity')) &&
-						!(move.id === 'electroshot' && ['stormsurge', 'raindance', 'primordialsea'].includes(this.effectiveWeather())) &&
+						!(move.id === 'electroshot' && ['stormsurge', 'raindance', 'primordialsea'].includes(this.effectiveWeather(move))) &&
 						!(this.hasItem('powerherb') && move.id !== 'skydrop');
 					if (!isCharging) {
 						target = this.battle.priorityEvent('RedirectTarget', this, this, move, target);
