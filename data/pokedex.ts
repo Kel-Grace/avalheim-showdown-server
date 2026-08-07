@@ -74,18 +74,6 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		eggGroups: ["Monster", "Grass"],
 		changesFrom: "Venusaur",
 	},
-	primaloka: {
-		num: 1030,
-		name: "Oka",
-		types: ["Ground", "Water"],
-		genderRatio: { M: 0.875, F: 0.125 },
-		baseStats: { hp: 80, atk: 80, def: 80, spa: 150, spd: 80, spe: 143 },
-		abilities: { 0: "Unaware", H: "Swift Swim" },
-		heightm: 1.7,
-		weightkg: 60.9,
-		color: "Black",
-		eggGroups: ["Monster", "Human-Like"],
-	},
 	charmander: {
 		num: 4,
 		name: "Charmander",

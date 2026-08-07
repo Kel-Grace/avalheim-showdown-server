@@ -43,9 +43,6 @@ const PokedexText = {
   megamythos: {
     name: "Mega Mythos"
   },
-  primaloka: {
-    name: "Oka Primal"
-  },
   charmeleon: {
     name: "Charmeleon"
   },

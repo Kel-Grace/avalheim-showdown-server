@@ -5,9 +5,6 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	ivysaur: {
 		tier: "NFE",
 	},
-	primaloka: {
-		tier: "OU",
-	},
 	venusaur: {
 		tier: "PU",
 		doublesTier: "(DUU)",
