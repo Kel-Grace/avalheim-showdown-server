@@ -3753,9 +3753,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "Illegal",
 		natDexTier: "OU",
 	},
-	greninjaash: {
-		isNonstandard: "Past",
-	},
 	bunnelby: {
 		tier: "LC",
 	},

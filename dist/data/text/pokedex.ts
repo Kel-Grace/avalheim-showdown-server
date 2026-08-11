@@ -2510,8 +2510,8 @@ export const PokedexText: { [id: IDEntry]: PokedexText } = {
 	greninjabond: {
 		name: "Greninja-Bond",
 	},
-	greninjaash: {
-		name: "Greninja-Ash",
+	greninjamegaz: {
+		name: "Greninja-Mega-Z",
 	},
 	bunnelby: {
 		name: "Bunnelby",

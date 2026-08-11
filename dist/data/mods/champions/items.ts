@@ -407,6 +407,10 @@ export const Items: import('../../../sim/dex-items').ModdedItemDataTable = {
 		inherit: true,
 		isNonstandard: null,
 	},
+	greninjamegaz: {
+		inherit: true,
+		isNonstandard: null,
+	},
 	grepaberry: {
 		inherit: true,
 		isNonstandard: "Past",

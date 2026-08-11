@@ -3296,9 +3296,9 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 	greninja: {
 		tier: "UU",
 	},
-	greninjaash: {
-		isNonstandard: "Past",
-		tier: "Illegal",
+	greninjamegaz: {
+		isNonstandard: "Future",
+		tier: "OU",
 	},
 	greninjabond: {
 		isNonstandard: "Past",

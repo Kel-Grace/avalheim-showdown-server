@@ -3825,8 +3825,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		doublesTier: "(DUU)",
 		natDexTier: "UUBL",
 	},
-	greninjaash: {
-		isNonstandard: "Past",
+	greninjamegaz: {
+		isNonstandard: "Future",
 		tier: "Illegal",
 	},
 	greninjamega: {

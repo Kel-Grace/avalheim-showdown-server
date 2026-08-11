@@ -2777,11 +2777,6 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "OU",
 		doublesTier: "DUU",
 	},
-	greninjaash: {
-		isNonstandard: null,
-		tier: "OU",
-		doublesTier: "DUU",
-	},
 	bunnelby: {
 		tier: "LC",
 	},
