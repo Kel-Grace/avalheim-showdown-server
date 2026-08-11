@@ -3317,7 +3317,6 @@ const FormatsData = {
     tier: "UU"
   },
   greninjamegaz: {
-    isNonstandard: "Future",
     tier: "OU"
   },
   greninjabond: {

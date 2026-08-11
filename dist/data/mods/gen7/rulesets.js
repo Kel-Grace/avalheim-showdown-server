@@ -75,7 +75,7 @@ const Rulesets = {
     onTeamPreview() {
       this.add("clearpoke");
       for (const pokemon of this.getAllPokemon()) {
-        const details = pokemon.details.replace(", shiny", "").replace(/(Arceus|Genesect|Gourgeist|Pumpkaboo|Xerneas|Silvally|Urshifu|Dudunsparce)(-[a-zA-Z?-]+)?/g, "$1-*").replace(/(Zacian|Zamazenta)(?!-Crowned)/g, "$1-*").replace(/(Greninja)(?!-Bond)/g, "$1-*");
+        const details = pokemon.details.replace(", shiny", "").replace(/(Arceus|Genesect|Gourgeist|Pumpkaboo|Xerneas|Silvally|Urshifu|Dudunsparce)(-[a-zA-Z?-]+)?/g, "$1-*").replace(/(Zacian|Zamazenta)(?!-Crowned)/g, "$1-*").replace(/(Greninja)(?!-Ash)/g, "$1-*");
         this.add("poke", pokemon.side.id, details, pokemon.item ? "item" : "");
       }
       this.makeRequest("teampreview");

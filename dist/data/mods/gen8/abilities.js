@@ -90,6 +90,23 @@ const Abilities = {
     inherit: true,
     rating: 1
   },
+  battlebond: {
+    inherit: true,
+    onSourceAfterFaint(length, target, source, effect) {
+      if (source.bondTriggered) return;
+      if (effect?.effectType !== "Move") {
+        return;
+      }
+      if (source.species.id === "greninjabond" && source.hp && !source.transformed && source.side.foePokemonLeft()) {
+        this.add("-activate", source, "ability: Battle Bond");
+        source.formeChange("Greninja-Ash", this.effect, true);
+        source.formeRegression = true;
+        source.bondTriggered = true;
+      }
+    },
+    isNonstandard: null,
+    rating: 4
+  },
   beastboost: {
     inherit: true,
     rating: 3.5

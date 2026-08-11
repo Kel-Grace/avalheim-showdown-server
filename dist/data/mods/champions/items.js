@@ -430,10 +430,6 @@ const Items = {
     inherit: true,
     isNonstandard: null
   },
-  greninjitez: {
-    inherit: true,
-    isNonstandard: null
-  },
   grepaberry: {
     inherit: true,
     isNonstandard: "Past"
