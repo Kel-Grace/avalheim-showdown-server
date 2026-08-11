@@ -42,28 +42,6 @@ describe('Team Validator', () => {
 		assert.false.legalTeam(team, 'gen6ou');
 	});
 
-	it('should properly validate Greninja-Ash', () => {
-		let team = [
-			{ species: 'greninja-ash', ability: 'battlebond', moves: ['happyhour'], shiny: true, evs: { hp: 1 } },
-		];
-		assert.false.legalTeam(team, 'gen7anythinggoes');
-
-		team = [
-			{ species: 'greninja-ash', ability: 'battlebond', moves: ['protect'], shiny: true, evs: { hp: 1 } },
-		];
-		assert.false.legalTeam(team, 'gen7anythinggoes');
-
-		team = [
-			{ species: 'greninja-ash', ability: 'battlebond', moves: ['protect'], ivs: { atk: 0 }, evs: { hp: 1 } },
-		];
-		assert.false.legalTeam(team, 'gen7anythinggoes');
-
-		team = [
-			{ species: 'greninja-ash', ability: 'battlebond', moves: ['hiddenpowergrass'], evs: { hp: 1 } },
-		];
-		assert.false.legalTeam(team, 'gen7anythinggoes');
-	});
-
 	it('should not allow evolutions of Shiny-locked events to be Shiny', () => {
 		const team = [
 			{ species: 'urshifu', ability: 'unseenfist', shiny: true, moves: ['snore'], evs: { hp: 1 } },

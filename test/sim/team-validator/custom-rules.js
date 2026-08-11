@@ -37,7 +37,7 @@ describe("Custom Rules", () => {
 		team = [
 			{ species: 'greninjabond', ability: 'battlebond', moves: ['surf'], evs: { hp: 1 } },
 		];
-		assert.legalTeam(team, 'gen7anythinggoes@@@!Obtainable Formes,-Greninja-Ash');
+		assert.legalTeam(team, 'gen7anythinggoes@@@!Obtainable Formes');
 	});
 
 	it('should allow Pokemon to be unbanned', () => {

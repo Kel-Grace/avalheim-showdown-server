@@ -24,6 +24,7 @@ export interface ItemDataTable { [itemid: IDEntry]: ItemData }
 export interface ModdedItemDataTable { [itemid: IDEntry]: ModdedItemData }
 
 export class Item extends BasicEffect implements Readonly<BasicEffect> {
+	[x: string]: string;
 	declare readonly effectType: 'Item';
 
 	/** just controls location on the item spritesheet */

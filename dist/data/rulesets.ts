@@ -2685,14 +2685,14 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
 			let species = this.dex.species.get(set.species);
 			if (
 				(species.natDexTier === 'Illegal' || species.forme.includes('Totem')) &&
-				!['Eevee-Starter', 'Floette-Eternal', 'Greninja-Ash', 'Pikachu-Starter', 'Xerneas-Neutral'].includes(species.name) &&
+				!['Eevee-Starter', 'Floette-Eternal', 'Pikachu-Starter', 'Xerneas-Neutral'].includes(species.name) &&
 				!this.ruleTable.has(`+pokemon:${species.id}`)
 			) {
 				return [`${species.name} is illegal.`];
 			}
 			const problemPokemon = this.dex.species.all().filter(s => (
 				(s.name === 'Xerneas' || s.battleOnly || s.forme === 'Eternamax') &&
-				!(s.isMega || s.isPrimal || ['Greninja-Ash', 'Necrozma-Ultra'].includes(s.name)) &&
+				!(s.isMega || s.isPrimal || ['Necrozma-Ultra'].includes(s.name)) &&
 				!(this.ruleTable.has(`+pokemon:${s.id}`) || this.ruleTable.has(`+basepokemon:${this.toID(s.baseSpecies)}`))
 			));
 			if (problemPokemon.includes(species)) {

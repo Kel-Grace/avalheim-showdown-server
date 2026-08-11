@@ -361,8 +361,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifyMovePriority: -1,
 		onModifyMove(move, attacker) {
-			if (move.id === 'watershuriken' && attacker.species.name === 'Greninja-Ash' &&
-				!attacker.transformed) {
+			if (move.id === 'watershuriken' && attacker.species.name === 'Greninja-Bond' &&
+				!attacker.abilityState.activated) {
 				move.multihit = 3;
 			}
 		},
