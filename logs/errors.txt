@@ -352,3 +352,83 @@ Error: Format "[Gen 7 Let's Go] Random Battle" requires nonexistent mod: 'gen7le
     at Object.socketConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\users.ts:1669:15)
     at Object.onSpawn (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\sockets.ts:36:11)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+[1786478133668] Error: IPC channel is already disconnected
+    at ChildProcess.target.disconnect (node:internal/child_process:910:26)
+    at QueryProcessWrapper.destroy (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:206:16)
+    at QueryProcessWrapper.release (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:192:9)
+    at QueryProcessManager.releaseCrashed (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:458:16)
+    at ChildProcess.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:515:47)
+    at ChildProcess.emit (node:events:509:20)
+    at finish (node:internal/child_process:940:14)
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+
+[1786478133672] Error: IPC channel is already disconnected
+    at ChildProcess.target.disconnect (node:internal/child_process:910:26)
+    at QueryProcessWrapper.destroy (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:206:16)
+    at QueryProcessWrapper.release (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:192:9)
+    at QueryProcessManager.releaseCrashed (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:458:16)
+    at ChildProcess.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:515:47)
+    at ChildProcess.emit (node:events:509:20)
+    at finish (node:internal/child_process:940:14)
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+
+[1786478133674] Error: IPC channel is already disconnected
+    at ChildProcess.target.disconnect (node:internal/child_process:910:26)
+    at QueryProcessWrapper.destroy (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:206:16)
+    at QueryProcessWrapper.release (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:192:9)
+    at QueryProcessManager.releaseCrashed (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:458:16)
+    at ChildProcess.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:515:47)
+    at ChildProcess.emit (node:events:509:20)
+    at finish (node:internal/child_process:940:14)
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+
+[1786478133674] Error: IPC channel is already disconnected
+    at ChildProcess.target.disconnect (node:internal/child_process:910:26)
+    at StreamProcessWrapper.destroy (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:322:16)
+    at StreamProcessWrapper.release (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:308:14)
+    at StreamProcessManager.releaseCrashed (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:458:16)
+    at ChildProcess.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:515:47)
+    at ChildProcess.emit (node:events:509:20)
+    at finish (node:internal/child_process:940:14)
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+
+[1786478133674] Error: IPC channel is already disconnected
+    at ChildProcess.target.disconnect (node:internal/child_process:910:26)
+    at QueryProcessWrapper.destroy (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:206:16)
+    at QueryProcessWrapper.release (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:192:9)
+    at QueryProcessManager.releaseCrashed (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:458:16)
+    at ChildProcess.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:515:47)
+    at ChildProcess.emit (node:events:509:20)
+    at finish (node:internal/child_process:940:14)
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+
+[1786478133675] Error: IPC channel is already disconnected
+    at ChildProcess.target.disconnect (node:internal/child_process:910:26)
+    at QueryProcessWrapper.destroy (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:206:16)
+    at QueryProcessWrapper.release (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:192:9)
+    at QueryProcessManager.releaseCrashed (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:458:16)
+    at ChildProcess.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:515:47)
+    at ChildProcess.emit (node:events:509:20)
+    at finish (node:internal/child_process:940:14)
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+
+[1786478133676] Error: IPC channel is already disconnected
+    at ChildProcess.target.disconnect (node:internal/child_process:910:26)
+    at QueryProcessWrapper.destroy (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:206:16)
+    at QueryProcessWrapper.release (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:192:9)
+    at QueryProcessManager.releaseCrashed (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:458:16)
+    at ChildProcess.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:515:47)
+    at ChildProcess.emit (node:events:509:20)
+    at finish (node:internal/child_process:940:14)
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+
+[1786478133682] Error: IPC channel is already disconnected
+    at ChildProcess.target.disconnect (node:internal/child_process:910:26)
+    at StreamProcessWrapper.destroy (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:322:16)
+    at StreamProcessWrapper.release (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:308:14)
+    at StreamProcessManager.releaseCrashed (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:458:16)
+    at ChildProcess.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\lib\process-manager.ts:515:47)
+    at ChildProcess.emit (node:events:509:20)
+    at finish (node:internal/child_process:940:14)
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)

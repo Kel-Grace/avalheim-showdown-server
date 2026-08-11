@@ -220,8 +220,6 @@ Custom rules can have more complicated behavior. They can also include other rul
 
 ### Miscellaneous
 
-`Allow AVs` - allow Pokémon to have their stats boosted by Awakening Values in Let's Go formats
-
 `Allow Tradeback` - allow Pokémon in Gen 1 to have moves from their Gen 2 learnsets
 
 `STABmons Move Legality` - allow Pokémon to have almost any move that matches their typing
