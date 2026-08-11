@@ -2624,7 +2624,6 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		megaStone: { "Greninja": "Greninja-Mega" },
 		itemUser: ["Greninja"],
 		onTakeItem(item, source) {
-			// TODO: Figure out if this works on Greninja-Bond
 			return !item.megaStone?.[source.baseSpecies.baseSpecies];
 		},
 		num: 2577,

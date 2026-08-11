@@ -2035,6 +2035,20 @@
 				"moves": [["Strange Steam"], ["Pain Split"], ["Will-O-Wisp", "Toxic"], ["Defog"]]
 			}]
 		},
+		"greninjabond": {
+			"weight": 1,
+			"sets": [{
+				"species": "Greninja-Bond",
+				"weight": 100,
+				"item": ["Life Orb"],
+				"ability": ["Battle Bond"],
+				"evs": {"spa": 252, "spd": 4, "spe": 252},
+				"ivs": {"atk": 0},
+				"nature": ["Timid"],
+				"teraType": ["Water", "Ghost"],
+				"moves": [["Surf", "Hydro Pump"], ["Dark Pulse"], ["Ice Beam"], ["Water Shuriken"]]
+			}]
+		},
 		"heatran": {
 			"weight": 1,
 			"sets": [{
@@ -2448,6 +2462,20 @@
 				"nature": ["Timid"],
 				"teraType": ["Water"],
 				"moves": [["Dark Pulse"], ["Surf", "Hydro Pump"], ["Ice Beam"], ["U-turn"]]
+			}]
+		},
+		"greninjabond": {	
+			"weight": 2,
+			"sets": [{
+				"species": "Greninja-Bond",
+				"weight": 100,
+				"item": ["Life Orb"],
+				"ability": ["Battle Bond"],
+				"evs": {"spa": 252, "spd": 4, "spe": 252},
+				"ivs": {"atk": 0},
+				"nature": ["Timid"],
+				"teraType": ["Water", "Stellar"],
+				"moves": [["Surf"], ["Dark Pulse"], ["Ice Beam", "Sludge Wave"], ["Protect", "Water Shuriken"]]
 			}]
 		},
 		"heatran": {
