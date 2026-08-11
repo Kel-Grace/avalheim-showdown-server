@@ -170,3 +170,15 @@
     at Object.socketConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\users.ts:1669:15)
     at Object.onSpawn (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\sockets.ts:36:11)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+[1786472684844] Error: Unrecognized rule "LGPE Normal Rules"
+    at DexFormats.validateRule (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:1102:11)
+    at C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:844:46
+    at Array.map (<anonymous>)
+    at DexFormats.getRuleTable (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:844:29)
+    at DexFormats.getRuleTable (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:977:30)
+    at DexFormats.getRuleTable (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:817:24)
+    at GlobalRoomState.get formatListText [as formatListText] (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\rooms.ts:1494:34)
+    at GlobalRoomState.handleConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\rooms.ts:1751:80)
+    at Object.socketConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\users.ts:1669:15)
+    at Object.onSpawn (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\sockets.ts:36:11)
