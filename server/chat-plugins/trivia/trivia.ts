@@ -89,6 +89,8 @@ const PAUSE_INTERMISSION = 5 * 1000;
 const MAX_QUESTION_LENGTH = 252;
 const MAX_ANSWER_LENGTH = 32;
 
+const MERGESCORE_EXPIRY = 15 * 60 * 1000;
+
 export interface TriviaQuestion {
 	question: string;
 	category: string;
@@ -140,6 +142,7 @@ export const database: TriviaDatabase = new TriviaSQLiteDatabase('config/chat-pl
 
 /** from:to Map */
 export const pendingAltMerges = new Map<ID, ID>();
+export const altMergeTimeouts = new Map<ID, NodeJS.Timeout>();
 
 function getTriviaGame(room: Room | null) {
 	if (!room) {
@@ -228,6 +231,7 @@ export async function requestAltMerge(from: ID, to: ID) {
 		throw new Chat.ErrorMessage(`The user '${to}' does not have an entry in the Trivia leaderboard.`);
 	}
 	pendingAltMerges.set(from, to);
+	altMergeTimeouts.set(from, setTimeout(() => pendingAltMerges.delete(from), MERGESCORE_EXPIRY));
 }
 
 /**
@@ -2488,12 +2492,13 @@ const triviaCommands: Chat.ChatCommands = {
 			await requestAltMerge(altid, user.id);
 			return this.sendReply(
 				`A Trivia leaderboard score merge with ${altid} is now pending! ` +
-				`To complete the merge, log in on the account '${altid}' and type /trivia mergescore ${user.id}`
+				`To transfer all points from ${altid} to ${user.id}, log in on the account '${altid}' and type /trivia mergescore ${user.id}`
 			);
 		}
 	},
 	mergescorehelp: [
-		`/trivia mergescore [user] — Merge another user's Trivia leaderboard score with yours.`,
+		`/trivia mergescore [user] — Initiates a merge of another account's Trivia leaderboard score into your current account. ` +
+		`Using this command again on the other account completes the merge. Attempts expire after 15 minutes.`,
 	],
 
 	help(target, room, user) {
@@ -2562,7 +2567,7 @@ const triviaCommands: Chat.ChatCommands = {
 			`	<li><code>/trivia alltimewinsladder</code> - Like <code>/trivia ladder</code>, but displays the all-time wins Trivia leaderboard (formerly all-time).</li>` +
 			`	<li><code>/trivia alltimescoreladder</code> - Like <code>/trivia ladder</code>, but displays the all-time score Trivia leaderboard (formerly non—all-time)</li>` +
 			`	<li><code>/trivia resetcycleleaderboard</code> - Resets the cycle-specific Trivia leaderboard. Requires: # ~` +
-			`	<li><code>/trivia mergescore [user]</code> — Merge another user's Trivia leaderboard score with yours.</li>` +
+			`	<li><code>/trivia mergescore [user]</code> — Initiates a merge of another account's Trivia leaderboard score into your current account. Using this command again on the other account completes the merge. Attempts expire after 15 minutes.</li>` +
 			`	<li><code>/trivia addpoints [user], [points]</code> - Add points to a given user's score on the Trivia leaderboard. Requires: # ~</li>` +
 			`	<li><code>/trivia removepoints [user], [points]</code> - Remove points from a given user's score on the Trivia leaderboard. Requires: # ~</li>` +
 			`	<li><code>/trivia removeleaderboardentry [user]</code> — Remove all Trivia leaderboard entries for a user. Requires: # ~</li>` +
@@ -2690,7 +2695,7 @@ const mastermindCommands: Chat.ChatCommands = {
 		];
 		return this.sendReplyBox(
 			`<strong>Mastermind</strong> is a game in which each player tries to score as many points as possible in a timed round where only they can answer, ` +
-			`and the top X players advance to the finals, which is a timed game of Trivia in which only the first player to answer a question recieves points.` +
+			`and the top X players advance to the finals, which is a timed game of Trivia in which only the first player to answer a question receives points.` +
 			`<details><summary><strong>Commands</strong></summary>${commandHelp.join('<br />')}</details>`
 		);
 	},
@@ -2707,6 +2712,9 @@ export const commands: Chat.ChatCommands = {
 	triviahelp: triviaCommands.triviahelp,
 };
 
-process.nextTick(() => {
+export function start() {
+	if (Config.usesqlite) {
+		database.start();
+	}
 	Chat.multiLinePattern.register('/trivia add ', '/trivia submit ', '/trivia move ');
-});
+}

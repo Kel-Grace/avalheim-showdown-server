@@ -26,13 +26,14 @@ To reload chat commands:
 import type { RoomPermission, GlobalPermission } from './user-groups';
 import type { Punishment } from './punishments';
 import type { PartialModlogEntry } from './modlog';
-import { FriendsDatabase, PM } from './friends';
-import { SQL, Repl, FS, Utils } from '../lib';
+import type * as ConfigLoader from './config-loader';
+import * as Friends from './friends';
+import { FS, Utils } from '../lib';
 import * as Artemis from './artemis';
-import { Dex } from '../sim';
 import { PrivateMessages } from './private-messages';
 import * as pathModule from 'path';
 import * as JSX from './chat-jsx';
+import { pluginDatabase } from './chat-db';
 
 export type PageHandler = (this: PageContext, query: string[], user: User, connection: Connection)
 => Promise<string | null | void | JSX.VNode> | string | null | void | JSX.VNode;
@@ -157,14 +158,15 @@ const MAX_PARSE_RECURSION = 10;
 const VALID_COMMAND_TOKENS = '/!';
 const BROADCAST_TOKEN = '!';
 
-const PLUGIN_DATABASE_PATH = './databases/chat-plugins.db';
 const MAX_PLUGIN_LOADING_DEPTH = 3;
 
 import { formatText, linkRegex, stripFormatting } from './chat-formatter';
 
-// @ts-expect-error no typedef available
-import ProbeModule = require('probe-image-size');
-const probe: (url: string) => Promise<{ width: number, height: number }> = ProbeModule;
+let probe: null | ((url: string) => Promise<{ width: number, height: number }>) = null;
+
+try {
+	probe = require('probe-image-size');
+} catch {}
 
 const EMOJI_REGEX = /[\p{Emoji_Modifier_Base}\p{Emoji_Presentation}\uFE0F]/u;
 
@@ -507,14 +509,17 @@ export class PageContext extends MessageContext {
 /**
  * This is a message sent in a PM or to a chat/battle room.
  *
- * There are three cases to be aware of:
- * - PM to user: `context.pmTarget` will exist and `context.room` will be `null`
+ * There are four cases to be aware of:
  * - message to room: `context.room` will exist and `context.pmTarget` will be `null`
+ * - PM to online user: `context.pmTarget` will exist and `context.room` will be `null`
  * - console command (PM to `~`): `context.pmTarget` and `context.room` will both be `null`
+ * - PM to offline user: `context.pmTargetName` will exist, while
+ *   `context.pmTarget` and `context.room` will be `null`
  */
 export class CommandContext extends MessageContext {
 	message: string;
 	pmTarget: User | null;
+	pmTargetName: string | null;
 	room: Room | null;
 	connection: Connection;
 
@@ -533,7 +538,8 @@ export class CommandContext extends MessageContext {
 	broadcastMessage: string;
 	constructor(options: {
 		message: string, user: User, connection: Connection,
-		room?: Room | null, pmTarget?: User | null, cmd?: string, cmdToken?: string, target?: string, fullCmd?: string,
+		room?: Room | null, pmTarget?: User | null, pmTargetName?: string | null,
+		cmd?: string, cmdToken?: string, target?: string, fullCmd?: string,
 		recursionDepth?: number, isQuiet?: boolean, broadcastPrefix?: string, bypassRoomCheck?: boolean,
 	}) {
 		super(
@@ -546,6 +552,7 @@ export class CommandContext extends MessageContext {
 
 		// message context
 		this.pmTarget = options.pmTarget || null;
+		this.pmTargetName = options.pmTargetName || options.pmTarget?.name || null;
 		this.room = options.room || null;
 		this.connection = options.connection;
 
@@ -578,6 +585,7 @@ export class CommandContext extends MessageContext {
 				connection: this.connection,
 				room: this.room,
 				pmTarget: this.pmTarget,
+				pmTargetName: this.pmTargetName,
 				recursionDepth: this.recursionDepth + 1,
 				bypassRoomCheck: this.bypassRoomCheck,
 				...options,
@@ -602,7 +610,9 @@ export class CommandContext extends MessageContext {
 			return this.popupReply(`You tried to send "${message}" to the room "${this.room.roomid}" but it failed because you were not in that room.`);
 		}
 
-		if (this.user.statusType === 'idle' && !['unaway', 'unafk', 'back'].includes(this.cmd)) {
+		if (this.user.statusType === 'idle' &&
+			this.message !== '/cmd rooms' &&
+			!['unaway', 'unafk', 'back'].includes(this.cmd)) {
 			this.user.setStatusType('online');
 		}
 
@@ -704,6 +714,8 @@ export class CommandContext extends MessageContext {
 				}
 			}
 			Chat.PrivateMessages.send(message, this.user, this.pmTarget);
+		} else if (this.pmTargetName) {
+			this.errorReply(`Your message could not be sent:\n${message}\nSending command messages to offline users is not supported.`);
 		} else if (this.room) {
 			this.room.add(`|c|${this.user.getIdentity(this.room)}|${message}`);
 			this.room.game?.onLogMessage?.(message, this.user);
@@ -800,7 +812,7 @@ export class CommandContext extends MessageContext {
 		if (!sender) {
 			if (this.room) throw new Error(`Not a PM`);
 			sender = this.user;
-			receiver = this.pmTarget;
+			receiver = this.pmTarget || this.pmTargetName;
 		}
 		const targetIdentity = typeof receiver === 'string' ? ` ${receiver}` : receiver ? receiver.getIdentity() : '~';
 		const prefix = `|pm|${sender.getIdentity()}|${targetIdentity}|`;
@@ -825,6 +837,8 @@ export class CommandContext extends MessageContext {
 				return prefix + message.slice(4);
 			} else if (message.startsWith(`|c|~|/`)) {
 				return prefix + message.slice(5);
+			} else if (message.startsWith(`|c|${sender.getIdentity()}|/raw `)) {
+				return prefix + message.slice(`|c|${sender.getIdentity()}|`.length);
 			} else if (message.startsWith(`|c|~|`)) {
 				return prefix + `/text ` + message.slice(5);
 			}
@@ -1040,6 +1054,9 @@ export class CommandContext extends MessageContext {
 	checkBroadcast(overrideCooldown?: boolean | string, suppressMessage?: string | null) {
 		if (this.broadcasting || !this.shouldBroadcast()) {
 			return true;
+		}
+		if (this.pmTargetName && !this.pmTarget) {
+			throw new Chat.ErrorMessage(`You cannot broadcast commands in offline PMs.`);
 		}
 
 		if (this.user.locked && !(this.room?.roomid.startsWith('help-') || this.pmTarget?.can('lock'))) {
@@ -1292,20 +1309,13 @@ export class CommandContext extends MessageContext {
 		if (setting === true && !user.can('lock')) return false; // this is to appease TS
 		const friends = targetUser.friends || new Set();
 		if (setting === 'friends') return friends.has(user.id);
-		return Users.globalAuth.atLeast(user, setting as AuthLevel);
+		return Users.globalAuth.atLeast(user, setting as AuthLevel) || friends.has(user.id);
 	}
 	checkPMHTML(targetUser: User) {
 		if (!(this.room && (targetUser.id in this.room.users)) && !this.user.can('addhtml')) {
 			throw new Chat.ErrorMessage("You do not have permission to use PM HTML to users who are not in this room.");
 		}
-		const friends = targetUser.friends || new Set();
-		if (
-			targetUser.settings.blockPMs &&
-			(targetUser.settings.blockPMs === true ||
-				(targetUser.settings.blockPMs === 'friends' && !friends.has(this.user.id)) ||
-				!Users.globalAuth.atLeast(this.user, targetUser.settings.blockPMs as AuthLevel)) &&
-				!this.user.can('lock')
-		) {
+		if (!this.checkCanPM(targetUser)) {
 			Chat.maybeNotifyBlocked('pm', targetUser, this.user);
 			throw new Chat.ErrorMessage("This user is currently blocking PMs.");
 		}
@@ -1425,6 +1435,8 @@ export class CommandContext extends MessageContext {
 							}
 						} else if (buttonName === 'send' && buttonValue && botmsgCommandRegex.test(buttonValue)) {
 							// no need to validate the bot being an actual bot; `/botmsg` will do it for us and is not abusable
+						} else if (buttonName === 'copyText') {
+							// copy buttons don't do anything on click except copy to clipboard
 						} else if (buttonName) {
 							throw new Chat.ErrorMessage([
 								`This button is not allowed: <${tagContent}>`,
@@ -1542,8 +1554,8 @@ export const Chat = new class {
 	 * which tends to cause unexpected behavior.
 	 */
 	readonly MAX_TIMEOUT_DURATION = 2147483647;
-	readonly Friends = new FriendsDatabase();
-	readonly PM = PM;
+	readonly Friends = new Friends.FriendsDatabase();
+	readonly FriendsPM = Friends.PM;
 	readonly PrivateMessages = PrivateMessages;
 
 	readonly multiLinePattern = new PatternTester();
@@ -1555,7 +1567,12 @@ export const Chat = new class {
 	commands!: AnnotatedChatCommands;
 	basePages!: PageTable;
 	pages!: PageTable;
-	readonly destroyHandlers: (() => void)[] = [Artemis.destroy];
+	readonly destroyHandlers: (() => void)[] = [
+		Artemis.destroy,
+		Friends.destroy,
+		() => void pluginDatabase.destroy(),
+		() => Chat.PrivateMessages.destroy(),
+	];
 	readonly crqHandlers: { [k: string]: CRQHandler } = {};
 	readonly handlers: { [k: string]: ((...args: any) => any)[] } = Object.create(null);
 	/** The key is the name of the plugin. */
@@ -1729,8 +1746,7 @@ export const Chat = new class {
 			if (/[^a-z0-9]/.test(dirname)) continue;
 			const dir = FS(`${TRANSLATION_DIRECTORY}/${dirname}`);
 
-			// For some reason, toID() isn't available as a global when this executes.
-			const languageID = Dex.toID(dirname);
+			const languageID = toID(dirname);
 			const files = await dir.readdir();
 			for (const filename of files) {
 				if (!filename.endsWith('.js')) continue;
@@ -1815,10 +1831,7 @@ export const Chat = new class {
 	 * All chat plugins share one database.
 	 * Chat.databaseReadyPromise will be truthy if the database is not yet ready.
 	 */
-	database = SQL(module, {
-		file: global.Config?.nofswriting ? ':memory:' : PLUGIN_DATABASE_PATH,
-		processes: global.Config?.chatdbprocesses,
-	});
+	database = pluginDatabase;
 	databaseReadyPromise: Promise<void> | null = null;
 
 	async prepareDatabase() {
@@ -1854,11 +1867,6 @@ export const Chat = new class {
 		for (const { file } of migrationsToRun) {
 			await this.database.runFile(pathModule.resolve(migrationsFolder, file));
 		}
-
-		Chat.destroyHandlers.push(
-			() => void Chat.database?.destroy(),
-			() => Chat.PrivateMessages.destroy(),
-		);
 	}
 
 	readonly MessageContext = MessageContext;
@@ -1905,14 +1913,14 @@ export const Chat = new class {
 
 		const initialRoomlogLength = room?.log.getLineCount();
 		const context = new CommandContext({ message, room, user, connection });
-		const start = Date.now();
+		const startTime = Date.now();
 		const result = context.parse();
 		if (typeof result?.then === 'function') {
 			void result.then(() => {
-				this.logSlowMessage(start, context);
+				this.logSlowMessage(startTime, context);
 			});
 		} else {
-			this.logSlowMessage(start, context);
+			this.logSlowMessage(startTime, context);
 		}
 		if (room && room.log.getLineCount() !== initialRoomlogLength) {
 			room.messagesSent++;
@@ -1923,8 +1931,8 @@ export const Chat = new class {
 
 		return result;
 	}
-	logSlowMessage(start: number, context: CommandContext) {
-		const timeUsed = Date.now() - start;
+	logSlowMessage(startTime: number, context: CommandContext) {
+		const timeUsed = Date.now() - startTime;
 		if (timeUsed < 1000) return;
 		if (context.cmd === 'search' || context.cmd === 'savereplay') return;
 
@@ -1948,12 +1956,12 @@ export const Chat = new class {
 
 	loadPluginFile(file: string) {
 		if (!file.endsWith('.js')) return;
-		this.loadPlugin(require(file), this.getPluginName(file));
+		this.loadPlugin(require(FS(file).path), this.getPluginName(file));
 	}
 
 	loadPluginDirectory(dir: string, depth = 0) {
 		for (const file of FS(dir).readdirSync()) {
-			const path = pathModule.resolve(dir, file);
+			const path = pathModule.join(dir, file);
 			if (FS(path).isDirectorySync()) {
 				depth++;
 				if (depth > MAX_PLUGIN_LOADING_DEPTH) continue;
@@ -1968,11 +1976,11 @@ export const Chat = new class {
 			}
 		}
 	}
-	annotateCommands(commandTable: AnyObject, namespace = ''): AnnotatedChatCommands {
+	annotateCommands(commandTable: AnyObject, namespace = '', pluginName?: string): AnnotatedChatCommands {
 		for (const cmd in commandTable) {
 			const entry = commandTable[cmd];
 			if (typeof entry === 'object') {
-				this.annotateCommands(entry, `${namespace}${cmd} `);
+				this.annotateCommands(entry, `${namespace}${cmd} `, pluginName);
 			}
 			if (typeof entry === 'string') {
 				const base = commandTable[entry];
@@ -1989,6 +1997,7 @@ export const Chat = new class {
 			entry.broadcastable = cmd.endsWith('help') || /\bthis\.(?:(check|can|run|should)Broadcast)\(/.test(handlerCode);
 			entry.isPrivate = /\bthis\.(?:privately(Check)?Can|commandDoesNotExist)\(/.test(handlerCode);
 			entry.requiredPermission = /this\.(?:checkCan|privately(?:Check)?Can)\(['`"]([a-zA-Z0-9]+)['"`](\)|, )/.exec(handlerCode)?.[1];
+			entry.plugin = pluginName;
 			if (!entry.aliases) entry.aliases = [];
 
 			// assign properties from the base command if the current command uses CommandContext.run.
@@ -2015,7 +2024,7 @@ export const Chat = new class {
 		// in the plugin.roomSettings = [plugin.roomSettings] action. So, we have to make them not getters
 		plugin = { ...plugin };
 		if (plugin.commands) {
-			Object.assign(Chat.commands, this.annotateCommands(plugin.commands));
+			Object.assign(Chat.commands, this.annotateCommands(plugin.commands, '', name));
 		}
 		if (plugin.pages) {
 			Object.assign(Chat.pages, plugin.pages);
@@ -2051,6 +2060,9 @@ export const Chat = new class {
 				if (!Chat.handlers[handlerName]) Chat.handlers[handlerName] = [];
 				Chat.handlers[handlerName].push(plugin.handlers[handlerName]);
 			}
+		}
+		if (plugin.start) {
+			plugin.start(Config.subprocessescache);
 		}
 		Chat.plugins[name] = plugin;
 	}
@@ -2448,7 +2460,7 @@ export const Chat = new class {
 				buf += `<span class="col abilitycol">${species.abilities['0']}</span>`;
 			}
 			if (species.abilities['H'] && species.abilities['S']) {
-				buf += `<span class="col twoabilitycol${species.unreleasedHidden ? ' unreleasedhacol' : ''}"><em>${species.abilities['H']}<br />(${species.abilities['S']})</em></span>`;
+				buf += `<span class="col twoabilitycol${species.unreleasedHidden ? ' unreleasedhacol' : ''}"><em>${species.abilities['H']}<br /><span style="display: inline-block;">(${species.abilities['S']})</span></em></span>`;
 			} else if (species.abilities['H']) {
 				buf += `<span class="col abilitycol${species.unreleasedHidden ? ' unreleasedhacol' : ''}"><em>${species.abilities['H']}</em></span>`;
 			} else if (species.abilities['S']) {
@@ -2475,7 +2487,7 @@ export const Chat = new class {
 		buf += '</li>';
 		return `<div class="message"><ul class="utilichart">${buf}<li style="clear:both"></li></ul></div>`;
 	}
-	getDataMoveHTML(move: Move) {
+	getDataMoveHTML(move: Move, isChampions = false) {
 		let buf = `<ul class="utilichart"><li class="result">`;
 		buf += `<span class="col movenamecol"><a href="https://${Config.routes.dex}/moves/${move.id}">${move.name}</a></span> `;
 		// encoding is important for the ??? type icon
@@ -2487,7 +2499,8 @@ export const Chat = new class {
 		}
 		buf += `<span class="col widelabelcol"><em>Accuracy</em><br>${typeof move.accuracy === 'number' ? (`${move.accuracy}%`) : '—'}</span> `;
 		const basePP = move.pp || 1;
-		const pp = Math.floor(move.noPPBoosts ? basePP : basePP * 8 / 5);
+		let pp = Math.floor(move.noPPBoosts ? basePP : basePP * 8 / 5);
+		if (isChampions) pp = move.noPPBoosts ? basePP : (basePP / 5 + 1) * 4;
 		buf += `<span class="col pplabelcol"><em>PP</em><br>${pp}</span> `;
 		buf += `<span class="col movedesccol">${move.shortDesc || move.desc}</span> `;
 		buf += `</li><li style="clear:both"></li></ul>`;
@@ -2512,6 +2525,12 @@ export const Chat = new class {
 	 * Gets the dimension of the image at url. Returns 0x0 if the image isn't found, as well as the relevant error.
 	 */
 	getImageDimensions(url: string): Promise<{ height: number, width: number }> {
+		if (Config.noNetRequests) {
+			return Promise.reject(new Error(`Net requests are disabled.`));
+		}
+		if (!probe) {
+			return Promise.reject(new Error(`Images not supported.`));
+		}
 		return probe(url);
 	}
 
@@ -2531,21 +2550,6 @@ export const Chat = new class {
 			result[key].push(val);
 		}
 		return result;
-	}
-
-	/**
-	 * Normalize a message for the purposes of applying chat filters.
-	 *
-	 * Not used by PS itself, but feel free to use it in your own chat filters.
-	 */
-	normalize(message: string) {
-		message = message.replace(/'/g, '').replace(/[^A-Za-z0-9]+/g, ' ').trim();
-		if (!/[A-Za-z][A-Za-z]/.test(message)) {
-			message = message.replace(/ */g, '');
-		} else if (!message.includes(' ')) {
-			message = message.replace(/([A-Z])/g, ' $1').trim();
-		}
-		return ' ' + message.toLowerCase() + ' ';
 	}
 
 	/**
@@ -2626,6 +2630,14 @@ export const Chat = new class {
 		return this.linkRegex.test(possibleUrl);
 	}
 
+	extractLinks(possibleUrl: string) {
+		// SEE ABOVE COMMENT
+		// HOW DID I FUCKING FORGET THAT THIS WAS A THING
+		// https://youtu.be/rnzMkJocw6Q?t=9
+		this.linkRegex.lastIndex = -1;
+		return this.linkRegex.exec(possibleUrl);
+	}
+
 	readonly filterWords: { [k: string]: FilterWord[] } = {};
 	readonly monitors: { [k: string]: Monitor } = {};
 
@@ -2637,11 +2649,16 @@ export const Chat = new class {
 	resolvePage(pageid: string, user: User, connection: Connection) {
 		return (new PageContext({ pageid, user, connection, language: user.language! })).resolve();
 	}
+
+	start(processCount: ConfigLoader.SubProcessesConfig) {
+		start(processCount);
+	}
 };
 
 // backwards compatibility; don't actually use these
 // they're just there so forks have time to slowly transition
 (Chat as any).escapeHTML = Utils.escapeHTML;
+(Chat as any).normalize = Utils.normalize;
 (Chat as any).splitFirst = Utils.splitFirst;
 (Chat as any).sendPM = Chat.PrivateMessages.send.bind(Chat.PrivateMessages);
 (CommandContext.prototype as any).can = CommandContext.prototype.checkCan;
@@ -2695,26 +2712,14 @@ export interface Monitor {
 	monitor?: MonitorHandler;
 }
 
-// explicitly check this so it doesn't happen in other child processes
-if (!process.send) {
-	Chat.database.spawn(Config.chatdbprocesses || 1);
-	Chat.databaseReadyPromise = Chat.prepareDatabase();
-	// we need to make sure it is explicitly JUST the child of the original parent db process
-	// no other child processes
-} else if (process.mainModule === module) {
-	global.Monitor = {
-		crashlog(error: Error, source = 'A chat child process', details: AnyObject | null = null) {
-			const repr = JSON.stringify([error.name, error.message, source, details]);
-			process.send!(`THROW\n@!!@${repr}\n${error.stack}`);
-		},
-	} as any;
-	process.on('uncaughtException', err => {
-		Monitor.crashlog(err, 'A chat database process');
-	});
-	process.on('unhandledRejection', err => {
-		Monitor.crashlog(err as Error, 'A chat database process');
-	});
-	global.Config = require('./config-loader').Config;
-	// eslint-disable-next-line no-eval
-	Repl.start('chat-db', cmd => eval(cmd));
+function start(processCount: ConfigLoader.SubProcessesConfig) {
+	if (Config.usesqlite) {
+		pluginDatabase.spawn(processCount['chatdb'] ?? 1);
+		Chat.databaseReadyPromise = Chat.prepareDatabase();
+	}
+	Chat.PrivateMessages.start(processCount);
+	Friends.start(processCount);
+	Artemis.start(processCount);
 }
+
+setTimeout(() => Chat.loadPlugins(), 5000);

@@ -1,5 +1,5 @@
 import { Utils } from '../lib/utils';
-import type { ConditionData } from './dex-conditions';
+import type { ConditionData, ModdedConditionData } from './dex-conditions';
 import { assignMissingFields, BasicEffect, toID } from './dex-data';
 
 /**
@@ -45,6 +45,7 @@ interface MoveFlags {
 	gravity?: 1; // Prevented from being executed or selected during Gravity's effect.
 	heal?: 1; // Prevented from being executed or selected during Heal Block's effect.
 	metronome?: 1; // Can be selected by Metronome.
+	minimize?: 1; // Deals double damage if the user is minimized.
 	mirror?: 1; // Can be copied by Mirror Move.
 	mustpressure?: 1; // Additional PP is deducted due to Pressure when it ordinarily would not.
 	noassist?: 1; // Cannot be selected by Assist.
@@ -69,7 +70,7 @@ export interface HitEffect {
 	onHit?: MoveEventMethods['onHit'];
 
 	// set pokemon conditions
-	boosts?: SparseBoostsTable | null;
+	boosts?: SparseBoostsTable;
 	status?: string;
 	volatileStatus?: string;
 
@@ -154,8 +155,6 @@ export interface MoveData extends EffectData, MoveEventMethods, HitEffect {
 	priority: number;
 	target: MoveTarget;
 	flags: MoveFlags;
-	/** Hidden Power */
-	realMove?: string;
 
 	damage?: number | 'level' | false | null;
 	contestType?: string;
@@ -189,7 +188,7 @@ export interface MoveData extends EffectData, MoveEventMethods, HitEffect {
 	// -----------
 	ohko?: boolean | 'Ice';
 	thawsTarget?: boolean;
-	heal?: number[] | null;
+	heal?: number[];
 	forceSwitch?: boolean;
 	selfSwitch?: 'copyvolatile' | 'shedtail' | boolean;
 	selfBoost?: { boosts?: SparseBoostsTable };
@@ -204,12 +203,16 @@ export interface MoveData extends EffectData, MoveEventMethods, HitEffect {
 	recoil?: [number, number];
 	drain?: [number, number];
 	mindBlownRecoil?: boolean;
+	chloroblastRecoil?: boolean;
 	stealsBoosts?: boolean;
 	struggleRecoil?: boolean;
-	secondary?: SecondaryEffect | null;
-	secondaries?: SecondaryEffect[] | null;
-	self?: SecondaryEffect | null;
-	hasSheerForce?: boolean;
+	secondary?: SecondaryEffect;
+	secondaries?: SecondaryEffect[];
+	self?: SecondaryEffect;
+	/**
+	 * Boosted by Sheer Force without suppressing secondary effects.
+	 */
+	hasSheerForceBoost?: boolean;
 
 	// Hit effect modifiers
 	// --------------------
@@ -249,7 +252,6 @@ export interface MoveData extends EffectData, MoveEventMethods, HitEffect {
 	multihitType?: 'parentalbond';
 	noDamageVariance?: boolean;
 	nonGhostTarget?: MoveTarget;
-	pressureTarget?: MoveTarget;
 	spreadModifier?: number;
 	sleepUsable?: boolean;
 	/**
@@ -279,6 +281,7 @@ export type ModdedMoveData = MoveData | Partial<Omit<MoveData, 'name'>> & {
 	bodyofwaterBoosted?: boolean,
 	longWhipBoost?: boolean,
 	gen?: number,
+	condition?: ModdedConditionData,
 };
 
 export interface MoveDataTable { [moveid: IDEntry]: MoveData }
@@ -298,7 +301,7 @@ interface MoveHitData {
 		 * Is this move a Z-Move that broke the target's protection?
 		 * (does 0.25x regular damage)
 		 */
-		zBrokeProtect: boolean,
+		bypassProtect: boolean | Effect,
 	};
 }
 
@@ -325,7 +328,6 @@ export interface ActiveMove extends MutableMove {
 	isExternal?: boolean;
 	lastHit?: boolean;
 	magnitude?: number;
-	negateSecondary?: boolean;
 	pranksterBoosted?: boolean;
 	selfDropped?: boolean;
 	selfSwitch?: 'copyvolatile' | 'shedtail' | boolean;
@@ -335,7 +337,6 @@ export interface ActiveMove extends MutableMove {
 	stellarBoosted?: boolean;
 	totalDamage?: number | false;
 	typeChangerBoosted?: Effect;
-	willChangeForme?: boolean;
 	infiltrates?: boolean;
 	ruinedAtk?: Pokemon;
 	ruinedDef?: Pokemon;
@@ -376,18 +377,18 @@ export class DataMove extends BasicEffect implements Readonly<BasicEffect & Move
 	 * Secondary effect. You usually don't want to access this
 	 * directly; but through the secondaries array.
 	 */
-	readonly secondary: SecondaryEffect | null;
+	readonly secondary?: SecondaryEffect;
 	/**
 	 * Secondary effects. An array because there can be more than one
 	 * (for instance, Fire Fang has both a burn and a flinch
 	 * secondary).
 	 */
-	readonly secondaries: SecondaryEffect[] | null;
+	readonly secondaries?: SecondaryEffect[];
 	/**
-	 * Moves manually boosted by Sheer Force that don't have secondary effects.
-	 * e.g. Jet Punch
+	 * Moves manually boosted by Sheer Force.
+	 * e.g. Electro Shot and Order Up.
 	 */
-	readonly hasSheerForce: boolean;
+	readonly hasSheerForceBoost: boolean;
 	/**
 	 * Move priority. Higher priorities go before lower priorities,
 	 * trumping the Speed stat.
@@ -450,8 +451,6 @@ export class DataMove extends BasicEffect implements Readonly<BasicEffect & Move
 	readonly flags: MoveFlags;
 	/** Whether or not the user must switch after using this move. */
 	readonly selfSwitch?: 'copyvolatile' | 'shedtail' | boolean;
-	/** Move target only used by Pressure. */
-	readonly pressureTarget: MoveTarget;
 	/** Move target used if the user is not a Ghost type (for Curse). */
 	readonly nonGhostTarget: MoveTarget;
 	/** Whether or not the move ignores abilities. */
@@ -477,6 +476,7 @@ export class DataMove extends BasicEffect implements Readonly<BasicEffect & Move
 	constructor(data: AnyObject) {
 		super(data);
 
+		if (data.placeholderFor) this.id = toID(data.placeholderFor); // Hidden Power hack
 		this.fullname = `move: ${this.name}`;
 		this.effectType = 'Move';
 		this.type = Utils.getString(data.type);
@@ -485,9 +485,9 @@ export class DataMove extends BasicEffect implements Readonly<BasicEffect & Move
 		this.accuracy = data.accuracy!;
 		this.critRatio = Number(data.critRatio) || 1;
 		this.baseMoveType = Utils.getString(data.baseMoveType) || this.type;
-		this.secondary = data.secondary || null;
-		this.secondaries = data.secondaries || (this.secondary && [this.secondary]) || null;
-		this.hasSheerForce = !!(data.hasSheerForce && !this.secondaries);
+		this.secondary = data.secondary || undefined;
+		this.secondaries = data.secondaries || (this.secondary && [this.secondary]) || undefined;
+		this.hasSheerForceBoost = data.hasSheerForceBoost || false;
 		this.priority = Number(data.priority) || 0;
 		this.category = data.category!;
 		this.overrideOffensiveStat = data.overrideOffensiveStat || undefined;
@@ -505,7 +505,6 @@ export class DataMove extends BasicEffect implements Readonly<BasicEffect & Move
 		this.isMax = data.isMax || false;
 		this.flags = data.flags || {};
 		this.selfSwitch = (typeof data.selfSwitch === 'string' ? (data.selfSwitch as ID) : data.selfSwitch) || undefined;
-		this.pressureTarget = data.pressureTarget || '';
 		this.nonGhostTarget = data.nonGhostTarget || '';
 		this.ignoreAbility = data.ignoreAbility || false;
 		this.damage = data.damage!;
@@ -626,7 +625,7 @@ export class DexMoves {
 	}
 
 	getByID(id: ID): Move {
-		if (id === '') return EMPTY_MOVE;
+		if (id === '' || id === 'constructor') return EMPTY_MOVE;
 		let move = this.moveCache.get(id);
 		if (move) return move;
 		if (this.dex.getAlias(id)) {

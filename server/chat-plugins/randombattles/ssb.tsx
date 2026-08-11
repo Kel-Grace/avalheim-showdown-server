@@ -52,7 +52,9 @@ class SSBMoveHTML extends Chat.JSX.Component<{ sigMove: Move, dex: ModdedDex }> 
 		};
 
 		if (sigMove.isNonstandard === "Past" && dex.gen >= 8) details["Past Gens Only"] = "x";
-		if (sigMove.secondary || sigMove.secondaries || sigMove.hasSheerForce) details["Boosted by Sheer Force"] = "";
+		if (sigMove.secondary || sigMove.secondaries || sigMove.hasSheerForceBoost) {
+			details["Boosted by Sheer Force"] = "";
+		}
 		if (sigMove.flags['contact'] && dex.gen >= 3) details["Contact"] = "";
 		if (sigMove.flags['sound'] && dex.gen >= 3) details["Sound"] = "";
 		if (sigMove.flags['bullet'] && dex.gen >= 6) details["Bullet"] = "";
@@ -128,9 +130,9 @@ class SSBMoveHTML extends Chat.JSX.Component<{ sigMove: Move, dex: ModdedDex }> 
 				<span dangerouslySetInnerHTML={{ __html: Chat.getDataMoveHTML(sigMove) }}></span>
 				<font size="1">{Object.entries(details).map(([detail, value], idx, arr) => {
 					const lastEntry = idx === arr.length - 1;
-					if (!value) return <>&#10003; {detail}{!lastEntry && <>&nbsp;|&ThickSpace;</>}</>;
-					if (value === 'x') return <>&#10007; {detail}{!lastEntry && <>&nbsp;|&ThickSpace;</>}</>;
-					return <><font color="#686868">{detail}:</font> {value}{!lastEntry && <>&nbsp;|&ThickSpace;</>}</>;
+					if (!value) return <>&#10003; {detail}{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}</>;
+					if (value === 'x') return <>&#10007; {detail}{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}</>;
+					return <><span class="gray">{detail}:</span> {value}{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}</>;
 				})}</font>
 				{(sigMove.desc && sigMove.desc !== sigMove.shortDesc) &&
 					<details><summary><strong>In-Depth Description</strong></summary>{sigMove.desc}</details>}
@@ -176,8 +178,8 @@ class SSBItemHTML extends Chat.JSX.Component<{ set: SSBSet, dex: ModdedDex, base
 					<span dangerouslySetInnerHTML={{ __html: Chat.getDataItemHTML(sigItem) }}></span>
 					<font size="1">{Object.entries(details).map(([detail, value], idx, arr) => {
 						const lastEntry = idx === arr.length - 1;
-						if (value === '') return <>{detail}{!lastEntry && <>&nbsp;|&ThickSpace;</>}</>;
-						return <><font color="#686868">{detail}:</font> {value}{!lastEntry && <>&nbsp;|&ThickSpace;</>}</>;
+						if (value === '') return <>{detail}{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}</>;
+						return <><span class="gray">{detail}:</span> {value}{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}</>;
 					})}</font>
 				</>;
 			}
@@ -209,8 +211,8 @@ class SSBAbilityHTML extends Chat.JSX.Component<{ set: SSBSet, dex: ModdedDex, b
 				<span dangerouslySetInnerHTML={{ __html: Chat.getDataAbilityHTML(sigAbil) }}></span>
 				<font size="1">{Object.entries(details).map(([detail, value], idx, arr) => {
 					const lastEntry = idx === arr.length - 1;
-					if (value === '') return <>{detail}{!lastEntry && <>&nbsp;|&ThickSpace;</>}</>;
-					return <><font color="#686868">${detail}:</font> {value}{!lastEntry && <>&nbsp;|&ThickSpace;</>}</>;
+					if (value === '') return <>{detail}{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}</>;
+					return <><span class="gray">${detail}:</span> {value}{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}</>;
 				})}</font>
 				{(sigAbil.desc && sigAbil.shortDesc && sigAbil.desc !== sigAbil.shortDesc) &&
 					<details><summary><strong>In-Depth Description</strong></summary>{sigAbil.desc}</details>}
@@ -242,7 +244,7 @@ class SSBPokemonHTML extends Chat.JSX.Component<{ species: string, dex: ModdedDe
 			Gen: String(newSpecies.gen) || 'CAP',
 			Height: `${newSpecies.heightm} m`,
 		};
-		details["Weight"] = `{newSpecies.weighthg / 10} kg <em>(${weighthit} BP)</em>`;
+		details["Weight"] = `${newSpecies.weighthg / 10} kg <em>(${weighthit} BP)</em>`;
 		if (newSpecies.color && dex.gen >= 5) details["Dex Colour"] = newSpecies.color;
 		if (newSpecies.eggGroups && dex.gen >= 2) details["Egg Group(s)"] = newSpecies.eggGroups.join(", ");
 		const evos: string[] = [];
@@ -278,7 +280,7 @@ class SSBPokemonHTML extends Chat.JSX.Component<{ species: string, dex: ModdedDe
 			}
 		}
 		if (!evos.length) {
-			details[`<font color="#686868">Does Not Evolve</font>`] = "";
+			details[`<span class="gray">Does Not Evolve</span>`] = "";
 		} else {
 			details["Evolution"] = evos.join(", ");
 		}
@@ -294,13 +296,13 @@ class SSBPokemonHTML extends Chat.JSX.Component<{ species: string, dex: ModdedDe
 					if (detail.includes('<font')) {
 						return <>
 							<span dangerouslySetInnerHTML={{ __html: detail }}></span>
-							{!lastEntry && <>&nbsp;|&ThickSpace;</>}
+							{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}
 						</>;
 					}
 					return <>
-						<font color="#686868">{detail}:</font> {}
+						<span class="gray">{detail}:</span> {}
 						{value.includes('<em>') ? <span dangerouslySetInnerHTML={{ __html: value }}></span> : value}
-						{!lastEntry && <>&nbsp;|&ThickSpace;</>}
+						{!lastEntry && <>&nbsp;|&#8287;&#8202;</>}
 					</>;
 				})}</font>
 			</>;
@@ -328,7 +330,7 @@ class SSBInnateHTML extends Chat.JSX.Component<{ name: string, dex: ModdedDex, b
 			return <><hr />
 				Innate Ability:<br />
 				<span dangerouslySetInnerHTML={{ __html: Chat.getDataAbilityHTML(baseAbility) }}></span>
-				<font size="1"><font color="#686868">Gen:</font> 9</font>
+				<font size="1"><span class="gray">Gen:</span> 9</font>
 				{longDesc && <details><summary><strong>In-Depth Description</strong></summary>{longDesc}</details>}
 			</>;
 		}
@@ -372,9 +374,10 @@ class SSBSetsHTML extends Chat.JSX.Component<{ target: string }> {
 			<SSBAbilityHTML set={set} dex={dex} baseDex={baseDex} />
 			<SSBInnateHTML name={setName} dex={dex} baseDex={baseDex} />
 			<SSBPokemonHTML species={set.species} dex={dex} baseDex={baseDex} />
-			{(!Array.isArray(set.item) && item.megaStone) &&
-				<SSBPokemonHTML species={item.megaStone} dex={dex} baseDex={baseDex} />}
-				// keys and Kennedy have an itemless forme change
+			{(!Array.isArray(set.item) && item.megaStone) && <SSBPokemonHTML
+				species={Object.values(item.megaStone)[0]} dex={dex} baseDex={baseDex}
+			/>}
+			{/* keys and Kennedy have an itemless forme change */}
 			{['Rayquaza'].includes(set.species) && <SSBPokemonHTML species={`${set.species}-Mega`} dex={dex} baseDex={baseDex} />}
 			{['Cinderace'].includes(set.species) && <SSBPokemonHTML species={`${set.species}-Gmax`} dex={dex} baseDex={baseDex} />}
 			{set.skip && <span dangerouslySetInnerHTML={{ __html: `</details>` }}></span>}</>;
