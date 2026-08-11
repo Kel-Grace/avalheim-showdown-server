@@ -286,3 +286,58 @@
     at GlobalRoomState.handleConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\rooms.ts:1751:80)
     at Object.socketConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\users.ts:1669:15)
     at Object.onSpawn (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\sockets.ts:36:11)
+
+[1786476260783] Error: Format "[Gen 7 Let's Go] Random Battle" requires nonexistent mod: 'gen7letsgo'
+    at DexFormats.load (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:673:43)
+    at ModdedDex.includeFormats (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex.ts:712:16)
+    at ModdedDex.loadData (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex.ts:654:9)
+    at ModdedDex.get data [as data] (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex.ts:159:15)
+    at DexSpecies.all (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-species.ts:792:29)
+    at Object.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\chat-plugins\abuse-monitor.ts:694:21)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+
+[1786476260815] Error: Format #2 has a duplicate ID: 'rprandombattle'
+    at DexFormats.load (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:663:41)
+    at ModdedDex.includeFormats (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex.ts:712:16)
+    at ModdedDex.loadData (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex.ts:654:9)
+    at ModdedDex.includeData (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex.ts:517:8)
+    at C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\chat-commands\info.ts:3362:6
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+
+[1786476260875] [22192] @!!@["Error","Format \"[Gen 7 Let's Go] Random Battle\" requires nonexistent mod: 'gen7letsgo'","A team validator process",null]
+Error: Format "[Gen 7 Let's Go] Random Battle" requires nonexistent mod: 'gen7letsgo'
+    at DexFormats.load (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\sim\dex-formats.js:449:46)
+    at ModdedDex.includeFormats (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\sim\dex.js:649:18)
+    at ModdedDex.loadData (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\sim\dex.js:605:12)
+    at ModdedDex.includeData (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\sim\dex.js:484:10)
+    at Object.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\server\team-validator-async.js:115:42)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+
+[1786476261874] [5236] @!!@["Error","Format \"[Gen 7 Let's Go] Random Battle\" requires nonexistent mod: 'gen7letsgo'","A dexsearch process",null]
+Error: Format "[Gen 7 Let's Go] Random Battle" requires nonexistent mod: 'gen7letsgo'
+    at DexFormats.load (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\sim\dex-formats.js:449:46)
+    at ModdedDex.includeFormats (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\sim\dex.js:649:18)
+    at ModdedDex.loadData (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\sim\dex.js:605:12)
+    at ModdedDex.includeData (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\sim\dex.js:484:10)
+    at Object.<anonymous> (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\dist\server\chat-plugins\datasearch.js:3105:7)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+
+[1786476282646] Error: Format #2 has a duplicate ID: 'rprandombattle'
+    at DexFormats.load (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:663:41)
+    at DexFormats.all (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:792:8)
+    at GlobalRoomState.get formatListText [as formatListText] (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\rooms.ts:1478:36)
+    at GlobalRoomState.handleConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\rooms.ts:1751:80)
+    at Object.socketConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\users.ts:1669:15)
+    at Object.onSpawn (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\sockets.ts:36:11)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)

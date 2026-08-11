@@ -25,31 +25,6 @@ const Formats = [
   // S/V Singles
   ///////////////////////////////////////////////////////////////////
   {
-    section: "ROLEPLAY"
-  },
-  {
-    name: "[RP] Random Battle",
-    desc: `Random Battle at Eldgard.`,
-    mod: "gen9",
-    team: "random",
-    ruleset: ["PotD", "Obtainable", "Species Clause", "HP Percentage Mod", "Cancel Mod", "Sleep Clause Mod", "Illusion Level Mod"]
-  },
-  {
-    name: "[RP] Premi\xE8re Ar\xE8ne",
-    desc: `Le tier de la premi\xE8re ar\xE8ne du RP.`,
-    mod: "gen9",
-    ruleset: ["PotD", "Obtainable", "Species Clause", "HP Percentage Mod", "Cancel Mod", "Sleep Clause Mod", "Illusion Level Mod"]
-  },
-  {
-    name: "[RP] Free-For-All Roleplay",
-    desc: `Le tier du FFA du RP.`,
-    mod: "gen9",
-    gameType: "freeforall",
-    tournamentShow: false,
-    rated: false,
-    ruleset: ["PotD", "Obtainable", "Species Clause", "HP Percentage Mod", "Cancel Mod", "Sleep Clause Mod", "Illusion Level Mod"]
-  },
-  {
     section: "S/V Singles"
   },
   {
@@ -7088,13 +7063,6 @@ const Formats = [
     banlist: ["Nonexistent"]
   },
   {
-    name: "[Gen 7 Let's Go] Random Battle",
-    mod: "gen7letsgo",
-    team: "random",
-    searchShow: false,
-    ruleset: ["Obtainable", "Allow AVs", "HP Percentage Mod", "Cancel Mod", "Sleep Clause Mod"]
-  },
-  {
     name: "[Gen 6] Random Battle",
     mod: "gen6",
     team: "random",
@@ -7898,13 +7866,6 @@ const Formats = [
     banlist: ["Battle Bond"]
   },
   {
-    name: "[Gen 7 Let's Go] OU",
-    mod: "gen7letsgo",
-    searchShow: false,
-    ruleset: ["Standard"],
-    banlist: ["Uber"]
-  },
-  {
     name: "[Gen 7] Custom Game",
     mod: "gen7",
     searchShow: false,
@@ -7970,14 +7931,6 @@ const Formats = [
     bestOfDefault: true,
     ruleset: ["Flat Rules", "Min Source Gen = 6"],
     banlist: ["Battle Bond"]
-  },
-  {
-    name: "[Gen 7 Let's Go] Doubles OU",
-    mod: "gen7letsgo",
-    gameType: "doubles",
-    searchShow: false,
-    ruleset: ["Standard Doubles", "Sleep Clause Mod"],
-    banlist: ["DUber"]
   },
   {
     name: "[Gen 7] Doubles Custom Game",
