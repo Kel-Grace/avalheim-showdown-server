@@ -374,58 +374,6 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		],
 	},
 
-	// Pet Mods
-	///////////////////////////////////////////////////////////////////
-
-	{
-		section: "Pet Mods",
-	},
-	{
-		name: "[Gen 9] Fusion Evolution Random Battle",
-		desc: "A random battle format featuring Fakemon created by fusing together the stats, types, and abilities of two Pokemon.",
-		mod: 'gen9fe',
-		team: 'randomFERB',
-		ruleset: ['HP Percentage Mod', 'Cancel Mod', 'Sleep Clause Mod', 'Terastal Clause', 'Data Preview', 'Fusion Sprite Viewer'],
-		onBegin() {
-			this.add(`raw|<div class='broadcast-green'><b>Need help with all of the new Pokemon and their wacky abilities? Or just want to look at cool sprites?<br />Then make sure to use the <a href="https://docs.google.com/spreadsheets/d/1ciOJ7J2qkF2pnv_khtRRIWQ4_Zra34Jaoc-R-No0c9I/edit?usp=sharing" target="_blank">Fusion Evolution Spreadsheet</a> or use /dt!</b></div>`);
-			this.add(`raw|Welcome to Fusion Evolution Random Battle!`);
-			this.add(`raw|<a href="https://www.smogon.com/forums/threads/fusion-evolution-gen-9-final-winners-closure-randbats-sets-wokshop-open.3717085">Fusion Evolution</a> is a Pet Mod featuring Pokémon added in community-drive slates created by fusing two Pokemon together!`);
-			this.add(`raw|You are invited to come the <a href="https://play.pokemonshowdown.com/petmods">Pet Mods</a> room to discuss the metagame.`);
-		},
-		onSwitchInPriority: 100,
-		onSwitchIn(pokemon) {
-			if ((pokemon.illusion || pokemon).getTypes(true, true).join('/') !==
-				this.dex.forGen(9).species.get((pokemon.illusion || pokemon).species.name).types.join('/') &&
-				!pokemon.terastallized) {
-				this.add('-start', pokemon, 'typechange', (pokemon.illusion || pokemon).getTypes(true).join('/'), '[silent]');
-			}
-		},
-	},
-	{
-		name: "[Gen 9] CCAPM 2024 Random Battle",
-		desc: "A random battle format featuring Fakemon created during the Community Create-A-Pet Mod event in the Pet Mods room in 2024.",
-		mod: 'ccapm2024',
-		team: 'randomCPM',
-		searchShow: false,
-		ruleset: ['HP Percentage Mod', 'Cancel Mod', 'Sleep Clause Mod', 'Terastal Clause', 'Data Preview'],
-		onBegin() {
-			this.add(`raw|<div class='broadcast-green'><b>Need help with all of the new Pokemon and their wacky abilities?<br />Then make sure to use the <a href="https://docs.google.com/spreadsheets/d/1nLcxshlfbqC2Vqu6oc-wJsRE2gMi29j6Htkm2IQe9CM/edit?usp=sharing" target="_blank">CCAPM Spreadsheet</a> or use /dt!</b></div>`);
-			this.add('-message', `Welcome to CCAPM 2024 Random Battle!`);
-			this.add('-message', `This is a Pet Mod featuring Pokemon created by Showdown users like you!`);
-			this.add('-message', `These Pokemon were created during the Community Create-A-Pet Mod event in the Pet Mods room last year!`);
-			this.add('-message', `For more events like this, join the Pet Mods room on Showdown:`);
-			this.add('-message', `https://play.pokemonshowdown.com/petmods`);
-		},
-		onSwitchInPriority: 100,
-		onSwitchIn(pokemon) {
-			if ((pokemon.illusion || pokemon).getTypes(true, true).join('/') !==
-				this.dex.forGen(9).species.get((pokemon.illusion || pokemon).species.name).types.join('/') &&
-				!pokemon.terastallized) {
-				this.add('-start', pokemon, 'typechange', (pokemon.illusion || pokemon).getTypes(true).join('/'), '[silent]');
-			}
-		},
-	},
-
 	// Draft League
 	///////////////////////////////////////////////////////////////////
 
