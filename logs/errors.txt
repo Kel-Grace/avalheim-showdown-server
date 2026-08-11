@@ -341,3 +341,14 @@ Error: Format "[Gen 7 Let's Go] Random Battle" requires nonexistent mod: 'gen7le
     at Object.socketConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\users.ts:1669:15)
     at Object.onSpawn (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\sockets.ts:36:11)
     at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+[1786476967216] Error: The "Picked Team Size" rule requires Team Preview.
+    at Object.onValidateRule (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\data\rulesets.ts:1994:11)
+    at DexFormats.getRuleTable (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:1055:45)
+    at DexFormats.getRuleTable (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:977:30)
+    at DexFormats.getRuleTable (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\sim\dex-formats.ts:817:24)
+    at GlobalRoomState.get formatListText [as formatListText] (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\rooms.ts:1494:34)
+    at GlobalRoomState.handleConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\rooms.ts:1751:80)
+    at Object.socketConnect (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\users.ts:1669:15)
+    at Object.onSpawn (C:\Users\Belal\Downloads\avalheim-showdown\avalheim-showdown-server\server\sockets.ts:36:11)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
