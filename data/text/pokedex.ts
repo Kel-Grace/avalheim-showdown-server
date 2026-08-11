@@ -17,6 +17,9 @@ export const PokedexText: { [id: IDEntry]: PokedexText } = {
 	charmander: {
 		name: "Charmander",
 	},
+	megamythos: {
+		name: "Mega Mythos",
+	},
 	charmeleon: {
 		name: "Charmeleon",
 	},
@@ -500,6 +503,9 @@ export const PokedexText: { [id: IDEntry]: PokedexText } = {
 	marowakalola: {
 		name: "Marowak-Alola",
 	},
+	marowakhollow: {
+		name: "Marowak-Hollow",
+	},
 	marowakalolatotem: {
 		name: "Marowak-Alola-Totem",
 	},
@@ -742,6 +748,9 @@ export const PokedexText: { [id: IDEntry]: PokedexText } = {
 	},
 	pichu: {
 		name: "Pichu",
+	},
+	pichukulele: {
+		name: "Pichukulele",
 	},
 	pichuspikyeared: {
 		name: "Pichu-Spiky-eared",
@@ -1529,6 +1538,9 @@ export const PokedexText: { [id: IDEntry]: PokedexText } = {
 	infernape: {
 		name: "Infernape",
 	},
+	infernapemega: {
+		name: "Infernape-Mega",
+	},
 	piplup: {
 		name: "Piplup",
 	},
@@ -1828,6 +1840,9 @@ export const PokedexText: { [id: IDEntry]: PokedexText } = {
 	},
 	rotommow: {
 		name: "Rotom-Mow",
+	},
+	rotomdrone: {
+		name: "Rotom-Drone",
 	},
 	uxie: {
 		name: "Uxie",

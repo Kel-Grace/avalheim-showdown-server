@@ -12,9 +12,15 @@ export const Abilities: import('../../../sim/dex-abilities').ModdedAbilityDataTa
 	effectspore: {
 		inherit: true,
 		onDamagingHit(damage, target, source, move) {
-			if (damage && move.flags['contact'] && this.randomChance(1, 10)) {
-				const status = this.sample(['slp', 'par', 'psn']);
-				source.trySetStatus(status, target);
+			if (damage && move.flags['contact'] && !source.status) {
+				const r = this.random(300);
+				if (r < 10) {
+					source.setStatus('slp', target);
+				} else if (r < 20) {
+					source.setStatus('par', target);
+				} else if (r < 30) {
+					source.setStatus('psn', target);
+				}
 			}
 		},
 	},
@@ -85,8 +91,6 @@ export const Abilities: import('../../../sim/dex-abilities').ModdedAbilityDataTa
 		},
 	},
 	lightningrod: {
-		inherit: true,
-		onAnyRedirectTarget: undefined, // no inherit
 		onFoeRedirectTarget(target, source, source2, move) {
 			// don't count Hidden Power as Electric-type
 			if (this.dex.moves.get(move.id).type !== 'Electric') return;
@@ -94,23 +98,10 @@ export const Abilities: import('../../../sim/dex-abilities').ModdedAbilityDataTa
 				return this.effectState.target;
 			}
 		},
-	},
-	magnetpull: {
-		inherit: true,
-		onFoeTrapPokemon: undefined, // no inherit
-		onFoeMaybeTrapPokemon: undefined, // no inherit
-		onAnyTrapPokemon(pokemon) {
-			if (pokemon.hasType('Steel') && pokemon.isAdjacent(this.effectState.target)) {
-				pokemon.tryTrap(true);
-			}
-		},
-		onAnyMaybeTrapPokemon(pokemon, source) {
-			if (!source) source = this.effectState.target;
-			if (!source || !pokemon.isAdjacent(source)) return;
-			if (!pokemon.knownType || pokemon.hasType('Steel')) {
-				pokemon.maybeTrapped = true;
-			}
-		},
+		flags: { breakable: 1 },
+		name: "Lightning Rod",
+		rating: 0,
+		num: 32,
 	},
 	minus: {
 		inherit: true,
@@ -150,7 +141,7 @@ export const Abilities: import('../../../sim/dex-abilities').ModdedAbilityDataTa
 	},
 	raindish: {
 		inherit: true,
-		onWeather: undefined, // no inherit
+		onWeather() {},
 		onResidualOrder: 10,
 		onResidualSubOrder: 3,
 		onResidual(pokemon) {
@@ -185,35 +176,32 @@ export const Abilities: import('../../../sim/dex-abilities').ModdedAbilityDataTa
 	},
 	trace: {
 		inherit: true,
-		onUpdate: undefined, // no inherit
+		onUpdate() {},
 		onStart(pokemon) {
 			const target = pokemon.side.randomFoe();
 			if (!target || target.fainted) return;
 			const ability = target.getAbility();
-			pokemon.setAbility(ability, target);
+			if (pokemon.setAbility(ability)) {
+				this.add('-ability', pokemon, ability, '[from] ability: Trace', `[of] ${target}`);
+			}
 		},
 		flags: {},
 	},
 	truant: {
 		inherit: true,
-		onStart: undefined, // no inherit
+		onStart() {},
 		onSwitchIn(pokemon) {
 			pokemon.truantTurn = this.turn !== 0;
-			// it is unnecessary to keep a volatile, but it helps with cross-gen implementation
+		},
+		onBeforeMove(pokemon) {
 			if (pokemon.truantTurn) {
-				pokemon.addVolatile('truant');
-			} else {
-				pokemon.removeVolatile('truant');
+				this.add('cant', pokemon, 'ability: Truant');
+				return false;
 			}
 		},
 		onResidualOrder: 27,
 		onResidual(pokemon) {
 			pokemon.truantTurn = !pokemon.truantTurn;
-			if (pokemon.truantTurn) {
-				pokemon.addVolatile('truant');
-			} else {
-				pokemon.removeVolatile('truant');
-			}
 		},
 	},
 	voltabsorb: {

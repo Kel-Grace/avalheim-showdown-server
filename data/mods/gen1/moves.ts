@@ -32,6 +32,7 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	},
 	bide: {
 		inherit: true,
+		priority: 0,
 		accuracy: true,
 		condition: {
 			onStart(pokemon) {
@@ -59,9 +60,15 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 				this.add('-activate', pokemon, 'Bide');
 				return false;
 			},
-			onSemiLockMove: 'bide',
-			onDisableMove(target) {
-				target.maybeLocked = false; // the player knows it is locked
+			onDisableMove(pokemon) {
+				if (!pokemon.hasMove('bide')) {
+					return;
+				}
+				for (const moveSlot of pokemon.moveSlots) {
+					if (moveSlot.id !== 'bide') {
+						pokemon.disableMove(moveSlot.id);
+					}
+				}
 			},
 		},
 		type: "???", // Will look as Normal but it's STAB-less
@@ -156,72 +163,28 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 			// - (Counter will thus desync if the target's last used move is not as counterable as the target's last selected move)
 			// - if Counter succeeds it will deal twice the last move damage dealt in battle (even if it's from a different pokemon because of a switch)
 
-			// With the new Desync Clause Mod, that uses the acting Pokemon Online POV, Counter succeeds if
-			// - the last selected move by the opponent is not Counter
-			// - the last used move by the opponent is Counterable
+			const lastMove = target.side.lastMove && this.dex.moves.get(target.side.lastMove.id);
+			const lastMoveIsCounterable = lastMove && lastMove.basePower > 0 &&
+				['Normal', 'Fighting'].includes(lastMove.type) && lastMove.id !== 'counter';
 
-			const isCounterable = (move: { basePower: number, type: string } | null) => {
-				move ??= { basePower: 0, type: 'Normal' };
-				return ['Normal', 'Fighting'].includes(move.type) && move.basePower > 0;
-			};
+			const lastSelectedMove = target.side.lastSelectedMove && this.dex.moves.get(target.side.lastSelectedMove);
+			const lastSelectedMoveIsCounterable = lastSelectedMove && lastSelectedMove.basePower > 0 &&
+				['Normal', 'Fighting'].includes(lastSelectedMove.type) && lastSelectedMove.id !== 'counter';
 
-			// These are the Counter user's POV and are used to determine if Counter will succeed
-			const isLastEnemySelectedMoveCounterable = target.side.lastEnemySelectedMove !== 'counter';
-			const isLastEnemyMoveCounterable = isCounterable(target.side.lastEnemyMove);
-
-			// These are the target's POV and are used for the hint messages
-			const isLastSelectedMoveCounterable = target.side.lastSelectedMove !== 'counter';
-			const isLastMoveCounterable = isCounterable(target.side.lastMove);
-
-			const isLastDamageNonZero = this.lastDamage > 0;
-
-			const willCounterSucceed = isLastEnemySelectedMoveCounterable && isLastEnemyMoveCounterable && isLastDamageNonZero;
-
-			// this.debug("COUNTER: isLastEnemySelectedMoveCounterable:" + isLastEnemySelectedMoveCounterable + " (" + target.side.lastEnemySelectedMove + ")");
-			// this.debug("COUNTER: isLastEnemyMoveCounterable:" + isLastEnemyMoveCounterable + " (" + target.side.lastEnemyMove + ")");
-			// this.debug("COUNTER: isLastSelectedMoveCounterable:" + isLastSelectedMoveCounterable + " (" + target.side.lastSelectedMove + ")");
-			// this.debug("COUNTER: isLastMoveCounterable:" + isLastMoveCounterable + " (" + (target.side.lastMove) + ")");
-			// this.debug("COUNTER: isLastDamageNonZero:" + isLastDamageNonZero + " (" + this.lastDamage + ")");
-
-			// Hint messages
-			if (!willCounterSucceed) {
-				if (isLastDamageNonZero) {
-					if (!isLastEnemySelectedMoveCounterable && isLastSelectedMoveCounterable) {
-						// the target has Counter in its first slot
-						if (isLastEnemyMoveCounterable) {
-							// and it didn't fail for other reason
-							this.hint("Desync Clause Mod activated!");
-							this.hint(
-								"In Gen 1, if Counter is used against a target that switched in and spent the turn sleeping, " +
-								"from the Counter user's perspective, " +
-								"it will fail if the move in the target's first slot is also Counter.",
-							);
-						}
-					} else if (!isLastEnemyMoveCounterable && isLastMoveCounterable) {
-						// the target selected a counterable move that was never announced
-						this.hint("Desync Clause Mod activated!", false, target.side);
-						this.hint(
-							"In Gen 1, from the Counter user's perspective, " +
-							"Counter uses the last announced move by the target's team to determine if it will succeed.",
-							false, target.side,
-						);
-					}
-				}
-
+			if (!lastMoveIsCounterable && !lastSelectedMoveIsCounterable) {
+				this.debug("Gen 1 Counter: last move was not Counterable");
 				this.add('-fail', pokemon);
 				return false;
 			}
-
-			if (!isLastSelectedMoveCounterable) {
-				// too obscure, don't hint
-			} else if (!isLastMoveCounterable) {
-				// the target selected a non-counterable move that was never announced
-				this.hint("Desync Clause Mod activated!", false, target.side);
-				this.hint(
-					"In Gen 1, from the Counter user's perspective, " +
-					"Counter uses the last announced move by the target's team to determine if it will succeed.",
-					false, target.side,
-				);
+			if (this.lastDamage <= 0) {
+				this.debug("Gen 1 Counter: no previous damage exists");
+				this.add('-fail', pokemon);
+				return false;
+			}
+			if (!lastMoveIsCounterable || !lastSelectedMoveIsCounterable) {
+				this.hint("Desync Clause Mod activated!");
+				this.add('-fail', pokemon);
+				return false;
 			}
 
 			return 2 * this.lastDamage;
@@ -248,22 +211,32 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 		},
 	},
 	disable: {
-		inherit: true,
+		num: 50,
+		accuracy: 55,
+		basePower: 0,
+		category: "Status",
+		name: "Disable",
+		pp: 20,
+		priority: 0,
+		flags: { protect: 1, mirror: 1, bypasssub: 1, metronome: 1 },
+		volatileStatus: 'disable',
 		onTryHit(target) {
-			return target.moveSlots.some(ms => ms.pp > 0);
+			// This function should not return if the checks are met. Adding && undefined ensures this happens.
+			return target.moveSlots.some(ms => ms.pp > 0) &&
+				!('disable' in target.volatiles) &&
+				undefined;
 		},
 		condition: {
-			inherit: true,
-			durationCallback: undefined, // no inherit
 			onStart(pokemon) {
 				// disable can only select moves that have pp > 0, hence the onTryHit modification
-				const [slotIndex, moveSlot] = this.sample(Array.from(pokemon.moveSlots.entries()).filter(([i, ms]) => ms.pp > 0));
-				this.debug(`Disable: disabling move ${moveSlot.move} in slot ${slotIndex}`);
+				const moveSlot = this.sample(pokemon.moveSlots.filter(ms => ms.pp > 0));
 				this.add('-start', pokemon, 'Disable', moveSlot.move);
 				this.effectState.move = moveSlot.id;
-				this.effectState.slotIndex = slotIndex;
 				// 1-8 turns (which will in effect translate to 0-7 missed turns for the target)
 				this.effectState.time = this.random(1, 9);
+			},
+			onEnd(pokemon) {
+				this.add('-end', pokemon, 'Disable');
 			},
 			onBeforeMovePriority: 6,
 			onBeforeMove(pokemon, target, move) {
@@ -280,17 +253,20 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 				}
 			},
 			onDisableMove(pokemon) {
-				// disable the move slot
-				if (pokemon.moveSlots.length > this.effectState.slotIndex) {
-					pokemon.moveSlots[this.effectState.slotIndex].disabled = true;
-					pokemon.moveSlots[this.effectState.slotIndex].disabledSource = this.effect.name;
+				for (const moveSlot of pokemon.moveSlots) {
+					if (moveSlot.id === this.effectState.move) {
+						pokemon.disableMove(moveSlot.id);
+					}
 				}
 			},
 		},
+		secondary: null,
+		target: "normal",
+		type: "Normal",
 	},
 	dizzypunch: {
 		inherit: true,
-		secondary: undefined, // no inherit
+		secondary: null,
 	},
 	doubleedge: {
 		inherit: true,
@@ -343,9 +319,11 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	focusenergy: {
 		inherit: true,
 		condition: {
-			inherit: true,
+			onStart(pokemon) {
+				this.add('-start', pokemon, 'move: Focus Energy');
+			},
 			// This does nothing as it's dealt with on critical hit calculation.
-			onModifyCritRatio: undefined, // no inherit
+			onModifyMove() {},
 		},
 	},
 	glare: {
@@ -371,13 +349,6 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 			for (const pokemon of this.getAllActive()) {
 				pokemon.clearBoosts();
 				if (pokemon !== source) {
-					if (['frz', 'slp'].includes(pokemon.status)) {
-						pokemon.side.lastSelectedMove = 'cannotmove' as ID;
-						pokemon.side.lastEnemySelectedMove = 'cannotmove' as ID;
-						if (this.queue.willMove(pokemon)) {
-							this.queue.changeAction(pokemon, { choice: 'move', pokemon, moveid: 'cannotmove' });
-						}
-					}
 					pokemon.cureStatus(true);
 				}
 				if (pokemon.status === 'tox') {
@@ -435,9 +406,11 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	},
 	leechseed: {
 		inherit: true,
-		onHit: undefined, // no inherit
+		onHit() {},
 		condition: {
-			inherit: true,
+			onStart(target) {
+				this.add('-start', target, 'move: Leech Seed');
+			},
 			onAfterMoveSelfPriority: 1,
 			onAfterMoveSelf(pokemon) {
 				const leecher = this.getAtSlot(pokemon.volatiles['leechseed'].sourceSlot);
@@ -463,9 +436,15 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 		},
 	},
 	lightscreen: {
-		inherit: true,
+		num: 113,
+		accuracy: true,
+		basePower: 0,
+		category: "Status",
+		name: "Light Screen",
+		pp: 30,
+		priority: 0,
+		flags: { metronome: 1 },
 		volatileStatus: 'lightscreen',
-		sideCondition: undefined, // no inherit
 		onTryHit(pokemon) {
 			if (pokemon.volatiles['lightscreen']) {
 				return false;
@@ -477,29 +456,14 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 			},
 		},
 		target: "self",
-	},
-	metronome: {
-		inherit: true,
-		onHit(pokemon) {
-			const moves = this.dex.moves.all().filter(move => (
-				(!move.isNonstandard || move.isNonstandard === 'Unobtainable') && move.flags['metronome']
-			));
-			let randomMove = '';
-			if (moves.length) {
-				moves.sort((a, b) => a.num - b.num);
-				randomMove = this.sample(moves).id;
-			}
-			if (!randomMove) return false;
-			pokemon.side.lastSelectedMove = this.toID(randomMove);
-			pokemon.side.lastEnemySelectedMove = pokemon.side.lastSelectedMove;
-			this.actions.useMove(randomMove, pokemon);
-		},
+		type: "Psychic",
 	},
 	mimic: {
 		inherit: true,
 		flags: { protect: 1, bypasssub: 1, metronome: 1 },
 		onHit(target, source) {
-			const moveslot = source.side.lastSelectedMoveSlot;
+			const moveslot = source.moves.indexOf('mimic');
+			if (moveslot < 0) return false;
 			const moves = target.moves;
 			const moveid = this.sample(moves);
 			if (!moveid) return false;
@@ -508,20 +472,13 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 				move: move.name,
 				id: move.id,
 				pp: source.moveSlots[moveslot].pp,
-				maxpp: this.calculatePP(move, source.ppUps[moveslot] || 0),
+				maxpp: move.pp * 8 / 5,
 				target: move.target,
 				disabled: false,
 				used: false,
 				virtual: true,
 			};
 			this.add('-start', source, 'Mimic', move.name);
-		},
-	},
-	minimize: {
-		inherit: true,
-		condition: {
-			inherit: true,
-			onSourceModifyDamage: undefined, // no inherit
 		},
 	},
 	mirrormove: {
@@ -532,14 +489,15 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 				return false;
 			}
 			pokemon.side.lastSelectedMove = foe.lastMove.id;
-			pokemon.side.lastEnemySelectedMove = pokemon.side.lastSelectedMove;
 			this.actions.useMove(foe.lastMove.id, pokemon);
 		},
 	},
 	mist: {
 		inherit: true,
 		condition: {
-			inherit: true,
+			onStart(pokemon) {
+				this.add('-start', pokemon, 'Mist');
+			},
 			onTryBoost(boost, target, source, effect) {
 				if (effect.effectType === 'Move' && effect.category !== 'Status') return;
 				if (source && target !== source) {
@@ -565,7 +523,7 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	},
 	petaldance: {
 		inherit: true,
-		onMoveFail: undefined, // no inherit
+		onMoveFail() {},
 	},
 	poisonsting: {
 		inherit: true,
@@ -588,12 +546,11 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 		inherit: true,
 		basePower: 1,
 		damageCallback(pokemon) {
-			if (((pokemon.level + (pokemon.level >> 1)) & 0xff) < 2) {
-				this.hint("In Gen 1, if a Pokémon at level 0, 1 or 171 uses Psywave, the game softlocks.");
+			const psywaveDamage = (this.random(0, this.trunc(1.5 * pokemon.level)));
+			if (psywaveDamage <= 0) {
+				this.hint("Desync Clause Mod activated!");
 				return false;
 			}
-			// in Gen 1, the opponent's roll could be zero, leading to a desync
-			const psywaveDamage = this.random(1, this.trunc(1.5 * pokemon.level));
 			return psywaveDamage;
 		},
 	},
@@ -638,7 +595,7 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	},
 	recover: {
 		inherit: true,
-		heal: undefined, // no inherit
+		heal: null,
 		onHit(target) {
 			if (target.hp === target.maxhp) return false;
 			// Fail when health is 255 or 511 less than max, unless it is divisible by 256
@@ -656,9 +613,15 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 		},
 	},
 	reflect: {
-		inherit: true,
+		num: 115,
+		accuracy: true,
+		basePower: 0,
+		category: "Status",
+		name: "Reflect",
+		pp: 20,
+		priority: 0,
+		flags: { metronome: 1 },
 		volatileStatus: 'reflect',
-		sideCondition: undefined, // no inherit
 		onTryHit(pokemon) {
 			if (pokemon.volatiles['reflect']) {
 				return false;
@@ -669,11 +632,13 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 				this.add('-start', pokemon, 'Reflect');
 			},
 		},
+		secondary: null,
 		target: "self",
+		type: "Psychic",
 	},
 	rest: {
 		inherit: true,
-		onTry: undefined, // no inherit
+		onTry() {},
 		onHit(target, source, move) {
 			if (target.hp === target.maxhp) return false;
 			// Fail when health is 255 or 511 less than max, unless it is divisible by 256
@@ -696,12 +661,12 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	roar: {
 		inherit: true,
 		forceSwitch: false,
-		onTryHit: undefined, // no inherit
+		onTryHit() {},
 		priority: 0,
 	},
 	rockslide: {
 		inherit: true,
-		secondary: undefined, // no inherit
+		secondary: null,
 		target: "normal",
 	},
 	rockthrow: {
@@ -777,7 +742,7 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	},
 	softboiled: {
 		inherit: true,
-		heal: undefined, // no inherit
+		heal: null,
 		onHit(target) {
 			if (target.hp === target.maxhp) return false;
 			// Fail when health is 255 or 511 less than max, unless it is divisible by 256
@@ -798,10 +763,18 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 		inherit: true,
 		pp: 10,
 		recoil: [1, 2],
-		onModifyMove: undefined, // no inherit
+		onModifyMove() {},
 	},
 	substitute: {
-		inherit: true,
+		num: 164,
+		accuracy: true,
+		basePower: 0,
+		category: "Status",
+		name: "Substitute",
+		pp: 10,
+		priority: 0,
+		flags: { metronome: 1 },
+		volatileStatus: 'substitute',
 		onTryHit(target) {
 			if (target.volatiles['substitute']) {
 				this.add('-fail', target, 'move: Substitute');
@@ -821,16 +794,11 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 			}
 		},
 		condition: {
-			inherit: true,
 			onStart(target) {
 				this.add('-start', target, 'Substitute');
 				this.effectState.hp = Math.floor(target.maxhp / 4) + 1;
-				if (target.volatiles['partiallytrapped']) {
-					this.add('-end', target, target.volatiles['partiallytrapped'].sourceEffect, '[partiallytrapped]', '[silent]');
-					delete target.volatiles['partiallytrapped'];
-				}
+				delete target.volatiles['partiallytrapped'];
 			},
-			onTryPrimaryHit: undefined, // no inherit
 			onTryHitPriority: -1,
 			onTryHit(target, source, move) {
 				if (move.category === 'Status') {
@@ -852,6 +820,8 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 				let uncappedDamage = move.hit > 1 ? this.lastDamage : this.actions.getDamage(source, target, move);
 				if (move.id === 'bide') uncappedDamage = source.volatiles['bide'].damage * 2;
 				if (!uncappedDamage && uncappedDamage !== 0) return null;
+				uncappedDamage = this.runEvent('SubDamage', target, source, move, uncappedDamage);
+				if (!uncappedDamage && uncappedDamage !== 0) return uncappedDamage;
 				this.lastDamage = uncappedDamage;
 				target.volatiles['substitute'].hp -= uncappedDamage > target.volatiles['substitute'].hp ?
 					target.volatiles['substitute'].hp : uncappedDamage;
@@ -863,8 +833,9 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 				}
 				// Drain/recoil/secondary effect confusion do not happen if the substitute breaks
 				if (target.volatiles['substitute']) {
-					if (uncappedDamage) {
-						this.actions.applyRecoilDamage(uncappedDamage, move, source);
+					if (move.recoil) {
+						this.damage(this.clampIntRange(Math.floor(uncappedDamage * move.recoil[0] / move.recoil[1]), 1),
+							source, target, 'recoil');
 					}
 					if (move.drain) {
 						const amount = this.clampIntRange(Math.floor(uncappedDamage * move.drain[0] / move.drain[1]), 1);
@@ -893,7 +864,13 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 				}
 				return 0;
 			},
+			onEnd(target) {
+				this.add('-end', target, 'Substitute');
+			},
 		},
+		secondary: null,
+		target: "self",
+		type: "Normal",
 	},
 	superfang: {
 		inherit: true,
@@ -902,7 +879,7 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	},
 	thrash: {
 		inherit: true,
-		onMoveFail: undefined, // no inherit
+		onMoveFail() {},
 	},
 	thunder: {
 		inherit: true,
@@ -913,14 +890,14 @@ export const Moves: import('../../../sim/dex-moves').ModdedMoveDataTable = {
 	},
 	triattack: {
 		inherit: true,
-		onHit: undefined, // no inherit
-		secondary: undefined, // no inherit
+		onHit() {},
+		secondary: null,
 	},
 	whirlwind: {
 		inherit: true,
 		accuracy: 85,
 		forceSwitch: false,
-		onTryHit: undefined, // no inherit
+		onTryHit() {},
 		priority: 0,
 	},
 	wingattack: {

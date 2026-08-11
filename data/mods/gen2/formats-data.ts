@@ -21,7 +21,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "LC",
 	},
 	wartortle: {
-		tier: "ZU",
+		tier: "PU",
 	},
 	blastoise: {
 		tier: "UU",
@@ -57,7 +57,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "LC",
 	},
 	raticate: {
-		tier: "PU",
+		tier: "NU",
 	},
 	spearow: {
 		tier: "LC",
@@ -69,7 +69,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "LC",
 	},
 	arbok: {
-		tier: "PU",
+		tier: "NU",
 	},
 	pichu: {
 		tier: "LC",
@@ -108,7 +108,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "LC",
 	},
 	clefairy: {
-		tier: "ZU",
+		tier: "PU",
 	},
 	clefable: {
 		tier: "UUBL",
@@ -192,10 +192,10 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "UU",
 	},
 	poliwag: {
-		tier: "ZU",
+		tier: "ZUBL",
 	},
 	poliwhirl: {
-		tier: "PUBL",
+		tier: "PU",
 	},
 	poliwrath: {
 		tier: "NUBL",
@@ -204,7 +204,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "UU",
 	},
 	abra: {
-		tier: "ZU",
+		tier: "PU",
 	},
 	kadabra: {
 		tier: "UU",
@@ -237,7 +237,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "UUBL",
 	},
 	geodude: {
-		tier: "ZU",
+		tier: "PU",
 	},
 	graveler: {
 		tier: "NU",
@@ -267,7 +267,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "UU",
 	},
 	farfetchd: {
-		tier: "PU",
+		tier: "NU",
 	},
 	doduo: {
 		tier: "ZU",
@@ -321,7 +321,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "NU",
 	},
 	voltorb: {
-		tier: "ZU",
+		tier: "PU",
 	},
 	electrode: {
 		tier: "UU",
@@ -345,10 +345,10 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "NU",
 	},
 	hitmonchan: {
-		tier: "PU",
+		tier: "PUBL",
 	},
 	hitmontop: {
-		tier: "NU",
+		tier: "PU",
 	},
 	lickitung: {
 		tier: "NU",
@@ -393,7 +393,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "PU",
 	},
 	staryu: {
-		tier: "ZU",
+		tier: "ZUBL",
 	},
 	starmie: {
 		tier: "OU",
@@ -420,7 +420,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "UU",
 	},
 	magby: {
-		tier: "LC",
+		tier: "ZU",
 	},
 	magmar: {
 		tier: "NU",
@@ -465,7 +465,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "NU",
 	},
 	porygon2: {
-		tier: "(OU)",
+		tier: "UUBL",
 	},
 	omanyte: {
 		tier: "ZU",
@@ -513,7 +513,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "LC",
 	},
 	bayleef: {
-		tier: "ZU",
+		tier: "PU",
 	},
 	meganium: {
 		tier: "UUBL",
@@ -534,13 +534,13 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "ZU",
 	},
 	feraligatr: {
-		tier: "UU",
+		tier: "NUBL",
 	},
 	sentret: {
 		tier: "LC",
 	},
 	furret: {
-		tier: "PU",
+		tier: "PUBL",
 	},
 	hoothoot: {
 		tier: "LC",
@@ -591,7 +591,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "LC",
 	},
 	azumarill: {
-		tier: "PU",
+		tier: "NU",
 	},
 	sudowoodo: {
 		tier: "NU",
@@ -612,7 +612,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "LC",
 	},
 	sunflora: {
-		tier: "ZU",
+		tier: "PU",
 	},
 	yanma: {
 		tier: "ZU",
@@ -645,7 +645,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "OU",
 	},
 	dunsparce: {
-		tier: "PU",
+		tier: "NU",
 	},
 	gligar: {
 		tier: "UU",
@@ -669,7 +669,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "PU",
 	},
 	teddiursa: {
-		tier: "ZU",
+		tier: "LC",
 	},
 	ursaring: {
 		tier: "UUBL",
@@ -699,13 +699,13 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "PU",
 	},
 	mantine: {
-		tier: "PU",
+		tier: "ZU",
 	},
 	skarmory: {
 		tier: "OU",
 	},
 	houndour: {
-		tier: "ZU",
+		tier: "NU",
 	},
 	houndoom: {
 		tier: "UUBL",

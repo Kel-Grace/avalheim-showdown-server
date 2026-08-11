@@ -1,7 +1,7 @@
 import type { PRNG } from '../../../sim';
-import { type MoveCounter, RandomBDSPTeams, type OldRandomBattleSpecies } from '../gen8bdsp/teams';
+import { type MoveCounter, RandomGen8Teams, type OldRandomBattleSpecies } from '../gen8/teams';
 
-export class RandomLetsGoTeams extends RandomBDSPTeams {
+export class RandomLetsGoTeams extends RandomGen8Teams {
 	override randomData: { [species: string]: OldRandomBattleSpecies } = require('./data.json');
 
 	constructor(format: Format | string, prng: PRNG | PRNGSeed | null) {
@@ -208,7 +208,7 @@ export class RandomLetsGoTeams extends RandomBDSPTeams {
 			name: species.baseSpecies,
 			species: forme,
 			level: this.adjustLevel || 100,
-			gender: species.gender || (this.random(2) ? 'F' : 'M'),
+			gender: species.gender,
 			happiness: 70,
 			shiny: this.randomChance(1, 1024),
 			item: (requiredItem || ''),

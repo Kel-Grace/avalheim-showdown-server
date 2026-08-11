@@ -7,7 +7,7 @@ const NO_LEAD_POKEMON = [
 
 export class RandomCAPTeams extends RandomTeams {
 	getCAPAbility(
-		types: Set<string>,
+		types: string[],
 		moves: Set<string>,
 		abilities: string[],
 		counter: MoveCounter,
@@ -26,7 +26,7 @@ export class RandomCAPTeams extends RandomTeams {
 
 	getCAPPriorityItem(
 		ability: string,
-		types: Set<string>,
+		types: string[],
 		moves: Set<string>,
 		counter: MoveCounter,
 		teamDetails: RandomTeamsTypes.TeamDetails,
@@ -88,11 +88,11 @@ export class RandomCAPTeams extends RandomTeams {
 		const evs = { hp: 85, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 };
 		const ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
 
-		const types = new Set(species.types);
+		const types = species.types;
 		const abilities = set.abilities!;
 
 		// Get moves
-		const moves = this.randomMoveset(types, abilities, teamDetails, species, isLead, movePool, teraType!, role, isDoubles);
+		const moves = this.randomMoveset(types, abilities, teamDetails, species, isLead, isDoubles, movePool, teraType!, role);
 		const counter = this.queryMoves(moves, species, teraType!, abilities);
 
 		// Get ability
@@ -102,7 +102,7 @@ export class RandomCAPTeams extends RandomTeams {
 		// First, the priority items
 		item = this.getCAPPriorityItem(ability, types, moves, counter, teamDetails, species, isLead, teraType!, role);
 		if (item === undefined) {
-			item = this.getPriorityItem(ability, types, moves, counter, teamDetails, species, isLead, teraType!, role, isDoubles);
+			item = this.getPriorityItem(ability, types, moves, counter, teamDetails, species, isLead, isDoubles, teraType!, role);
 		}
 		if (item === undefined) {
 			item = this.getItem(ability, types, moves, counter, teamDetails, species, isLead, teraType!, role);
@@ -148,10 +148,7 @@ export class RandomCAPTeams extends RandomTeams {
 			) return false;
 			return move.category !== 'Physical' || move.id === 'bodypress' || move.id === 'foulplay';
 		});
-		if (
-			noAttackStatMoves && !moves.has('transform') && this.format.mod !== 'partnersincrime' &&
-			!ruleTable.has('forceofthefallenmod')
-		) {
+		if (noAttackStatMoves && !moves.has('transform') && this.format.mod !== 'partnersincrime') {
 			evs.atk = 0;
 			ivs.atk = 0;
 		}
@@ -214,7 +211,6 @@ export class RandomCAPTeams extends RandomTeams {
 		const [capPokemonPool, capBaseSpeciesPool] = this.getPokemonPool(type, pokemon, isMonotype, capPokemonList);
 
 		let leadsRemaining = 1;
-		if (ruleTable.has('pickedteamsize') || ruleTable.has('teampreview')) leadsRemaining = 0;
 		while (baseSpeciesPool.length && pokemon.length < this.maxTeamSize) {
 			let baseSpecies, species;
 			// Always generate a CAP Pokemon in slot 2; other slots can randomly generate CAP Pokemon.

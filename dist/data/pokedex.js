@@ -19959,12 +19959,12 @@ const Pokedex = {
     name: "Mega Mythos",
     types: ["Steel", "Psychic"],
     gender: "M",
-    baseStats: { hp: 90, atk: 120, def: 120, spa: 120, spd: 120, spe: 90 },
+    baseStats: { hp: 150, atk: 120, def: 100, spa: 120, spd: 100, spe: 90 },
     abilities: { 0: "Moody" },
     heightm: 1.9,
     weightkg: 110,
     color: "Black",
-    tags: ["Mythical"],
+    tags: ["Legendary"],
     eggGroups: ["Undiscovered"]
   }
 };

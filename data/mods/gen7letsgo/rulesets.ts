@@ -1,16 +1,10 @@
 export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable = {
 	standard: {
 		inherit: true,
-		ruleset: [
-			'Standard AG',
-			'LGPE Normal Rules', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Evasion Moves Clause', 'Sleep Clause Mod',
-		],
+		ruleset: ['Adjust Level = 50', 'Obtainable', 'Team Preview', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Evasion Moves Clause', 'HP Percentage Mod', 'Cancel Mod', 'Sleep Clause Mod'],
 	},
 	standarddoubles: {
 		inherit: true,
-		ruleset: [
-			'Standard AG',
-			'LGPE Normal Rules', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Evasion Moves Clause',
-		],
+		ruleset: ['Adjust Level = 50', 'Obtainable', 'Team Preview', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Evasion Moves Clause', 'HP Percentage Mod', 'Cancel Mod'],
 	},
 };

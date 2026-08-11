@@ -251,18 +251,16 @@ export const Scripts: ModdedBattleScriptsData = {
 			this.hpType = (this.battle.gen >= 5 ? this.hpType : pokemon.hpType);
 			this.hpPower = (this.battle.gen >= 5 ? this.hpPower : pokemon.hpPower);
 			this.timesAttacked = pokemon.timesAttacked;
-			for (const [i, moveSlot] of pokemon.moveSlots.entries()) {
+			for (const moveSlot of pokemon.moveSlots) {
 				let moveName = moveSlot.move;
 				if (moveSlot.id === 'hiddenpower') {
 					moveName = 'Hidden Power ' + this.hpType;
 				}
-				const move = this.battle.dex.moves.get(moveSlot.id);
-				const pp = Math.min(5, move.pp);
 				this.moveSlots.push({
 					move: moveName,
 					id: moveSlot.id,
-					pp,
-					maxpp: this.battle.gen >= 5 ? pp : this.battle.calculatePP(move, this.ppUps[i] || 0),
+					pp: moveSlot.maxpp === 1 ? 1 : 5,
+					maxpp: this.battle.gen >= 5 ? (moveSlot.maxpp === 1 ? 1 : 5) : moveSlot.maxpp,
 					target: moveSlot.target,
 					disabled: false,
 					used: false,
@@ -295,7 +293,7 @@ export const Scripts: ModdedBattleScriptsData = {
 				this.apparentType = this.terastallized;
 			}
 			// Changed to be compatible with trademarks
-			if (this.battle.gen > 2) this.setAbility(pokemon.getAbility(), this, null, true, true);
+			if (this.battle.gen > 2) this.setAbility(pokemon.getAbility(), this, true, true);
 
 			// Change formes based on held items (for Transform)
 			// Only ever relevant in Generation 4 since Generation 3 didn't have item-based forme changes

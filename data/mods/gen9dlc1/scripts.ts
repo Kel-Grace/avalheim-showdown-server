@@ -1,5 +1,3 @@
-import { toID } from '../../../sim/dex-data';
-
 export const Scripts: ModdedBattleScriptsData = {
 	gen: 9,
 	inherit: 'gen9',
@@ -13,7 +11,7 @@ export const Scripts: ModdedBattleScriptsData = {
 			}
 			if (pokemon.species.baseSpecies === 'Ogerpon' && !['Fire', 'Grass', 'Rock', 'Water'].includes(pokemon.teraType) &&
 				(!pokemon.illusion || pokemon.illusion.species.baseSpecies === 'Ogerpon')) {
-				this.battle.hint("If Ogerpon Terastallizes into a type other than Fire, Grass, Rock, or Water, the game crashes.", false, pokemon.side);
+				this.battle.hint("If Ogerpon Terastallizes into a type other than Fire, Grass, Rock, or Water, the game softlocks.");
 				return;
 			}
 
@@ -37,6 +35,13 @@ export const Scripts: ModdedBattleScriptsData = {
 			}
 			if (pokemon.species.name === 'Terapagos-Terastal') {
 				pokemon.formeChange('Terapagos-Stellar', null, true);
+				pokemon.baseMaxhp = Math.floor(Math.floor(
+					2 * pokemon.species.baseStats['hp'] + pokemon.set.ivs['hp'] + Math.floor(pokemon.set.evs['hp'] / 4) + 100
+				) * pokemon.level / 100 + 10);
+				const newMaxHP = pokemon.baseMaxhp;
+				pokemon.hp = newMaxHP - (pokemon.maxhp - pokemon.hp);
+				pokemon.maxhp = newMaxHP;
+				this.battle.add('-heal', pokemon, pokemon.getHealth, '[silent]');
 			}
 			if (pokemon.species.baseSpecies === 'Morpeko' && !pokemon.transformed &&
 				pokemon.baseSpecies.id !== pokemon.species.id
@@ -89,18 +94,16 @@ export const Scripts: ModdedBattleScriptsData = {
 			this.hpType = (this.battle.gen >= 5 ? this.hpType : pokemon.hpType);
 			this.hpPower = (this.battle.gen >= 5 ? this.hpPower : pokemon.hpPower);
 			this.timesAttacked = pokemon.timesAttacked;
-			for (const [i, moveSlot] of pokemon.moveSlots.entries()) {
+			for (const moveSlot of pokemon.moveSlots) {
 				let moveName = moveSlot.move;
 				if (moveSlot.id === 'hiddenpower') {
 					moveName = 'Hidden Power ' + this.hpType;
 				}
-				const move = this.battle.dex.moves.get(moveSlot.id);
-				const pp = Math.min(5, move.pp);
 				this.moveSlots.push({
 					move: moveName,
 					id: moveSlot.id,
-					pp,
-					maxpp: this.battle.gen >= 5 ? pp : this.battle.calculatePP(move, this.ppUps[i] || 0),
+					pp: moveSlot.maxpp === 1 ? 1 : 5,
+					maxpp: this.battle.gen >= 5 ? (moveSlot.maxpp === 1 ? 1 : 5) : moveSlot.maxpp,
 					target: moveSlot.target,
 					disabled: false,
 					used: false,
@@ -132,7 +135,7 @@ export const Scripts: ModdedBattleScriptsData = {
 				this.knownType = true;
 				this.apparentType = this.terastallized;
 			}
-			if (this.battle.gen > 2) this.setAbility(pokemon.ability, this, null, true, true);
+			if (this.battle.gen > 2) this.setAbility(pokemon.ability, this, true, true);
 
 			// Change formes based on held items (for Transform)
 			// Only ever relevant in Generation 4 since Generation 3 didn't have item-based forme changes

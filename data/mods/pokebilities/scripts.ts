@@ -14,26 +14,27 @@ export const Scripts: ModdedBattleScriptsData = {
 	},
 	pokemon: {
 		ignoringAbility() {
-			if (this.battle.gen >= 5 && !this.isActive) return true;
-
-			// Certain Abilities won't activate while Transformed, even if they ordinarily couldn't be suppressed (e.g. Disguise)
-			if (this.getAbility().flags['notransform'] && this.transformed) return true;
-			if (this.getAbility().flags['cantsuppress']) return false;
-			if (this.volatiles['gastroacid']) return true;
-
 			// Check if any active pokemon have the ability Neutralizing Gas
-			if (this.hasItem('Ability Shield') || this.m.innates?.includes('neutralizinggas') ||
-				this.ability === ('neutralizinggas' as ID)) return false;
+			let neutralizinggas = false;
 			for (const pokemon of this.battle.getAllActive()) {
 				// can't use hasAbility because it would lead to infinite recursion
-				if ((pokemon.m.innates?.includes('neutralizinggas') || pokemon.ability === ('neutralizinggas' as ID)) &&
-					!pokemon.volatiles['gastroacid'] && !pokemon.transformed &&
-					!pokemon.abilityState.ending && !this.volatiles['commanding']) {
-					return true;
+				if (
+					(pokemon.ability === ('neutralizinggas' as ID) || pokemon.m.innates?.some((k: string) => k === 'neutralizinggas')) &&
+					!pokemon.volatiles['gastroacid'] && !pokemon.abilityState.ending
+				) {
+					neutralizinggas = true;
+					break;
 				}
 			}
 
-			return false;
+			return !!(
+				(this.battle.gen >= 5 && !this.isActive) ||
+				((this.volatiles['gastroacid'] ||
+					(neutralizinggas && (this.ability !== ('neutralizinggas' as ID) ||
+						this.m.innates?.some((k: string) => k === 'neutralizinggas'))
+					)) && !this.getAbility().flags['cantsuppress']
+				)
+			);
 		},
 		hasAbility(ability) {
 			if (this.ignoringAbility()) return false;
@@ -70,18 +71,16 @@ export const Scripts: ModdedBattleScriptsData = {
 			this.hpType = (this.battle.gen >= 5 ? this.hpType : pokemon.hpType);
 			this.hpPower = (this.battle.gen >= 5 ? this.hpPower : pokemon.hpPower);
 			this.timesAttacked = pokemon.timesAttacked;
-			for (const [i, moveSlot] of pokemon.moveSlots.entries()) {
+			for (const moveSlot of pokemon.moveSlots) {
 				let moveName = moveSlot.move;
 				if (moveSlot.id === 'hiddenpower') {
 					moveName = 'Hidden Power ' + this.hpType;
 				}
-				const move = this.battle.dex.moves.get(moveSlot.id);
-				const pp = Math.min(5, move.pp);
 				this.moveSlots.push({
 					move: moveName,
 					id: moveSlot.id,
-					pp,
-					maxpp: this.battle.gen >= 5 ? pp : this.battle.calculatePP(move, this.ppUps[i] || 0),
+					pp: moveSlot.maxpp === 1 ? 1 : 5,
+					maxpp: this.battle.gen >= 5 ? (moveSlot.maxpp === 1 ? 1 : 5) : moveSlot.maxpp,
 					target: moveSlot.target,
 					disabled: false,
 					used: false,
@@ -114,7 +113,7 @@ export const Scripts: ModdedBattleScriptsData = {
 				this.apparentType = this.terastallized;
 			}
 			if (this.battle.gen > 2) {
-				this.setAbility(pokemon.ability, this, null, true);
+				this.setAbility(pokemon.ability, this, true);
 				if (this.m.innates) {
 					for (const innate of this.m.innates) {
 						this.removeVolatile('ability:' + innate);
@@ -203,7 +202,7 @@ export const Scripts: ModdedBattleScriptsData = {
 				if (this.illusion) {
 					this.ability = ''; // Don't allow Illusion to wear off
 				}
-				this.setAbility(species.abilities['0'], null, null, true);
+				this.setAbility(species.abilities['0'], null, true);
 				this.baseAbility = this.ability;
 			}
 			if (this.terastallized && this.terastallized !== this.apparentType) {
