@@ -823,6 +823,10 @@ export const ItemsText: { [id: IDEntry]: ItemText } = {
 		name: "Greninjite",
 		shortDesc: "If held by a Greninja, this item allows it to Mega Evolve in battle.",
 	},
+	greninjitez: {
+		name: "Greninjite Z",
+		shortDesc: "If held by a Greninja, this item allows it to Mega Evolve in battle.",
+	},
 	grepaberry: {
 		name: "Grepa Berry",
 		shortDesc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",

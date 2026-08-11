@@ -2631,6 +2631,18 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		gen: 9,
 		isNonstandard: "Future",
 	},
+	greninjitez: {
+		name: "Greninjite Z",
+		spritenum: 560,
+		megaStone: { "Greninja": "Greninja-Mega-Z" },
+		itemUser: ["Greninja"],
+		onTakeItem(item, source) {
+			return !item.megaStone?.[source.baseSpecies.baseSpecies];
+		},
+		num: 3000,
+		gen: 7,
+		isNonstandard: "Future",
+	},
 	grepaberry: {
 		name: "Grepa Berry",
 		spritenum: 178,
