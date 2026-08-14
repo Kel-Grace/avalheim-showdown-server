@@ -19718,6 +19718,17 @@ const Pokedex = {
     tags: ["Mythical"],
     eggGroups: ["Undiscovered"]
   },
+  nokko: {
+    num: 0,
+    name: "Nokko",
+    types: ["Fighting", "Normal"],
+    baseStats: { hp: 255, atk: 255, def: 255, spa: 255, spd: 255, spe: 255 },
+    abilities: { 0: "Adaptability" },
+    heightm: 1.75,
+    weightkg: 78.9,
+    color: "White",
+    eggGroups: ["Humanoid"]
+  },
   missingno: {
     num: 0,
     name: "MissingNo.",

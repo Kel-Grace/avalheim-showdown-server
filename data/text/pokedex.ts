@@ -3548,6 +3548,9 @@ export const PokedexText: { [id: IDEntry]: PokedexText } = {
 	missingno: {
 		name: "MissingNo.",
 	},
+	nokko: {
+		name: "Nokko",
+	},
 	syclar: {
 		name: "Syclar",
 	},

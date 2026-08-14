@@ -3571,6 +3571,9 @@ const PokedexText = {
   missingno: {
     name: "MissingNo."
   },
+  nokko: {
+    name: "Nokko"
+  },
   syclar: {
     name: "Syclar"
   },
