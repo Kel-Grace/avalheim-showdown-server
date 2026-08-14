@@ -7460,6 +7460,23 @@ const Rulesets = {
       return problems;
     }
   },
+  vindgardspecialmod: {
+    effectType: "Rule",
+    name: "Vindgard Special Mod",
+    desc: "A Vindgard souffle le Typhon Hivernal Eternel.",
+    onBegin() {
+      this.field.setWeather("snowscape");
+      this.field.weatherState.duration = 0;
+      this.add("rule", "Vindgard Special Mod: A Vindgard souffle le Typhon Hivernal Eternel.");
+      this.field.clearWeather = () => false;
+    },
+    onAnySetWeather(target, source, weather) {
+      if (weather.id !== "snowscape") {
+        this.hint("Une force myst\xE9rieuse vous emp\xEAche de changer la m\xE9t\xE9o.");
+        return false;
+      }
+    }
+  },
   ferventimpersonationmod: {
     effectType: "Rule",
     name: "Fervent Impersonation Mod",

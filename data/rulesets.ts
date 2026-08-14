@@ -2887,6 +2887,23 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
 			return problems;
 		},
 	},
+	vindgardspecialmod: {
+		effectType: 'Rule',
+		name: "Vindgard Special Mod",
+		desc: "A Vindgard souffle le Typhon Hivernal Eternel.",
+		onBegin() {
+			this.field.setWeather('snowscape');
+			this.field.weatherState.duration = 0;
+			this.add('rule', "Vindgard Special Mod: A Vindgard souffle le Typhon Hivernal Eternel.");
+			this.field.clearWeather = () => false;
+	},
+		onAnySetWeather(target, source, weather) {
+			if (weather.id !== 'snowscape')  {
+			this.hint("Une force mystérieuse vous empêche de changer la météo.");
+			return false;
+		}
+	},
+}, 
 	ferventimpersonationmod: {
 		effectType: 'Rule',
 		name: "Fervent Impersonation Mod",
